@@ -3,3 +3,9 @@ dist/
 .env
 *.log
 docs/
+
+# Docker — volume data (nếu dùng bind mount)
+mongo-data/
+
+# Docker env — chứa secret thật, không commit
+.env.docker

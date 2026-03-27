@@ -1,0 +1,5 @@
+# Không copy vào Docker build context
+node_modules/
+dist/
+.env
+*.log

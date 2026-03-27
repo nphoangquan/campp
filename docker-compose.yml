@@ -1,0 +1,87 @@
+# ============================================================
+# docker-compose.yml — Base config (dùng cho cả dev lẫn production)
+#
+# 3 services:
+#   1. mongo   — Database MongoDB 7
+#   2. server  — Backend Express (port 5000)
+#   3. client  — Frontend React qua nginx (port 80 → map ra 3000)
+#
+# Chuẩn bị:
+#   cp .env.docker.example .env.docker
+#   Điền giá trị thật vào .env.docker
+#
+# Dev:        docker-compose up --build
+# Production: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Dừng:       docker-compose down
+# Xóa data:   docker-compose down -v
+# ============================================================
+
+services:
+  # --------------------------------------------------------
+  # MongoDB 7 — Database chính
+  # --------------------------------------------------------
+  mongo:
+    image: mongo:7
+    container_name: camp-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      # Gắn cả 2 path image khai báo VOLUME để tránh volume ẩn (tên hash)
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    # Healthcheck: ping Mongo bằng mongosh, đợi đến khi DB thật sự sẵn sàng
+    # → server sẽ chờ Mongo healthy trước khi khởi động (depends_on condition)
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s   # Kiểm tra mỗi 10 giây
+      timeout: 5s     # Timeout mỗi lần kiểm tra
+      retries: 5      # Thử tối đa 5 lần trước khi báo unhealthy
+      start_period: 20s # Chờ 20 giây đầu trước khi bắt đầu kiểm tra
+
+  # --------------------------------------------------------
+  # Backend — Express + TypeScript
+  # --------------------------------------------------------
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: nphoangquan/camp-server:latest
+    container_name: camp-server
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    # Đọc biến môi trường từ file .env.docker (không commit)
+    # env_file đọc TOÀN BỘ file — không cần liệt kê từng biến
+    env_file:
+      - .env.docker
+    depends_on:
+      mongo:
+        # Chờ đến khi Mongo báo "healthy" (healthcheck pass)
+        # Tránh server crash vì connect DB trước khi Mongo sẵn sàng
+        condition: service_healthy
+
+  # --------------------------------------------------------
+  # Frontend — React + Vite, serve bằng nginx
+  # --------------------------------------------------------
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        # Đọc VITE_* từ .env.docker để truyền vào Vite lúc build
+        # Vite bake env vào bundle JS — phải build lại khi đổi URL
+        VITE_API_URL: ${VITE_API_URL:-/api}
+        VITE_SOCKET_URL: ${VITE_SOCKET_URL:-http://localhost:5000}
+    image: nphoangquan/camp-client:latest
+    container_name: camp-client
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+
+# Volume được Docker quản lý — persist qua restart
+volumes:
+  mongo-data:
+  mongo-config:

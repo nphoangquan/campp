@@ -1,0 +1,8 @@
+# Không copy vào Docker build context — giảm thời gian build + kích thước
+node_modules/
+dist/
+.env
+*.log
+tests/
+jest.config.cjs
+tsconfig.test.json
