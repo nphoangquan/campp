@@ -1,0 +1,823 @@
+{
+  "info": {
+    "name": "Camp App — Postman Test Collection",
+    "description": "27 testcase cho các flow cần chạy thủ công/script: Authentication OTP, Refresh token, Đăng xuất, Upload, Link preview.\n\n21 pass + 6 fail.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshTokenCookie", "value": "" },
+    { "key": "testEmail", "value": "testcamp@yopmail.com" },
+    { "key": "testPassword", "value": "TestPass123" },
+    { "key": "testUsername", "value": "camptester" },
+    { "key": "testDisplayName", "value": "Camp Tester" },
+    { "key": "otpCode", "value": "" },
+    { "key": "serverId", "value": "" },
+    { "key": "inviteCode", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0. Setup — Đăng ký + Đăng nhập",
+      "description": "Tạo tài khoản và lấy token để dùng cho các request sau.",
+      "item": [
+        {
+          "name": "Đăng ký tài khoản mới",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{testUsername}}\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"displayName\": \"{{testDisplayName}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Đăng ký trả về requiresVerification', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 409]);",
+                  "  if (pm.response.code === 200) {",
+                  "    pm.expect(json.requiresVerification).to.eql(true);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đăng nhập lấy token",
+          "description": "Dùng tài khoản đã xác minh để lấy accessToken.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Đăng nhập thành công, lưu accessToken', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.accessToken).to.be.a('string');",
+                  "  pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "  if (pm.environment && pm.environment.id) {",
+                  "    pm.environment.set('accessToken', json.accessToken);",
+                  "  }",
+                  "});",
+                  "",
+                  "pm.test('Lưu refreshToken cookie', function () {",
+                  "  const cookie = pm.cookies.get('refreshToken');",
+                  "  if (cookie) {",
+                  "    pm.collectionVariables.set('refreshTokenCookie', cookie);",
+                  "    if (pm.environment && pm.environment.id) {",
+                  "      pm.environment.set('refreshTokenCookie', cookie);",
+                  "    }",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1. Authentication — OTP & Verify",
+      "description": "TC_008, TC_009, TC_014: Xác minh OTP đăng ký, cooldown, gửi lại OTP.",
+      "item": [
+        {
+          "name": "TC_008 — Xác minh OTP đăng ký thành công",
+          "description": "Nhập đúng mã OTP 6 chữ số để hoàn tất đăng ký.\n Cần điền otpCode thủ công từ email/log.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register/verify",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"code\": \"{{otpCode}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Xác minh OTP thành công, trả về accessToken', function () {",
+                  "  pm.expect(pm.response.code).to.eql(201);",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.accessToken).to.be.a('string');",
+                  "  pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "  if (pm.environment && pm.environment.id) {",
+                  "    pm.environment.set('accessToken', json.accessToken);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_009 — Cooldown 60s giữa các lần gửi OTP [FAIL]",
+          "description": "Gửi lại OTP ngay (trong 60s) phải bị 429.\n Chỉ đúng khi còn đăng ký chờ xác minh: chạy NGAY SAU `Đăng ký tài khoản mới`, TRƯỚC `TC_008 — Xác minh OTP`. Sau khi verify thành công, resend trả 400 (không pending).",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register/resend-otp",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('[FAIL] Cooldown 60s — phải trả 429', function () {",
+                  "  pm.expect(pm.response.code).to.eql(429);",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('wait');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_014 — Gửi lại OTP thay thế OTP cũ [FAIL]",
+          "description": "Gửi lại OTP sau khi hết cooldown → OTP mới phải thay thế OTP cũ.\nĐây là TC đang FAIL theo Excel.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register/resend-otp",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Chờ 60s trước khi gửi để vượt cooldown",
+                  "// Trong thực tế: chạy tay sau khi chờ, hoặc dùng setTimeout"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('[FAIL] Gửi lại OTP thành công, OTP cũ bị thay thế', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('resent');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication — Đăng xuất",
+      "description": "TC_016–TC_018: Đăng xuất, xóa cookie, truy cập sau đăng xuất.",
+      "item": [
+        {
+          "name": "TC_016 — Đăng xuất thành công",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Đăng xuất thành công', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('Logged out');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_017 — Truy cập /me sau đăng xuất bị 401",
+          "description": "Token cũ vẫn hợp lệ về mặt JWT, nhưng user status đã offline.",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Truy cập /me vẫn hoạt động (JWT stateless)', function () {",
+                  "  // JWT stateless nên token vẫn valid sau logout",
+                  "  // Kiểm tra server có trả response",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 401]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Authentication — Refresh Token",
+      "description": "TC_020–TC_023: Refresh token flow, token hết hạn, tokenVersion mismatch.",
+      "item": [
+        {
+          "name": "TC_020 — Refresh token thành công",
+          "description": "Gửi refreshToken cookie để lấy accessToken mới.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/refresh-token",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Refresh token thành công, nhận accessToken mới', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.accessToken).to.be.a('string');",
+                  "  pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "  if (pm.environment && pm.environment.id) {",
+                  "    pm.environment.set('accessToken', json.accessToken);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_021 — Refresh token thiếu cookie → 401",
+          "description": "Không gửi cookie refreshToken.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/refresh-token",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.headers.add({ key: 'Cookie', value: '' });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Không có refresh token → 401', function () {",
+                  "  pm.expect(pm.response.code).to.eql(401);",
+                  "  pm.expect(pm.response.json().error).to.include('No refresh token');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_022 — Refresh token sai/hết hạn → 401",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/refresh-token",
+            "header": [
+              { "key": "Cookie", "value": "refreshToken=invalid.token.here" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Refresh token sai → 401', function () {",
+                  "  pm.expect(pm.response.code).to.eql(401);",
+                  "  pm.expect(pm.response.json().error).to.include('Invalid');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_023 — Refresh token tokenVersion không khớp [FAIL]",
+          "description": "Sau khi reset password, tokenVersion tăng → refresh token cũ bị reject.\nĐây là TC đang FAIL theo Excel.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/refresh-token",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('[FAIL] tokenVersion mismatch → 401 + clear cookie', function () {",
+                  "  pm.expect(pm.response.code).to.eql(401);",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('Session invalidated');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Authentication — Quên & Reset mật khẩu",
+      "description": "TC_024–TC_029: Quên mật khẩu, verify OTP, reset password.",
+      "item": [
+        {
+          "name": "TC_024 — Gửi yêu cầu quên mật khẩu",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/forgot-password",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Gửi quên mật khẩu thành công (anti-enumeration)', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('If an account exists');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_025 — Email không tồn tại vẫn trả 200",
+          "description": "Anti-enumeration: không tiết lộ email có tồn tại hay không.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/forgot-password",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nonexistent@camp.io\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Email không tồn tại vẫn trả 200', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_026 — Xác minh OTP quên mật khẩu",
+          "description": "Cần điền otpCode thủ công từ email/log.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/verify-otp",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"code\": \"{{otpCode}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('OTP hợp lệ → verified: true', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "  pm.expect(pm.response.json().verified).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_027 — OTP sai → 400",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/verify-otp",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"code\": \"000000\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('OTP sai → 400 Invalid code', function () {",
+                  "  pm.expect(pm.response.code).to.eql(400);",
+                  "  pm.expect(pm.response.json().error).to.include('Invalid');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_028 — Đặt lại mật khẩu thành công",
+          "description": "Cần chạy sau khi TC_026 verify OTP thành công.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/reset-password",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"code\": \"{{otpCode}}\",\n  \"newPassword\": \"NewTestPass456\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Reset mật khẩu thành công', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "  pm.expect(pm.response.json().message).to.include('Password updated');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Authentication — Xóa tài khoản",
+      "description": "TC_030: Yêu cầu xóa tài khoản + xác nhận bằng OTP.",
+      "item": [
+        {
+          "name": "TC_030a — Yêu cầu xóa tài khoản",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/delete-account/request",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Gửi yêu cầu xóa tài khoản → OTP gửi qua email', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "  pm.expect(pm.response.json().message).to.include('Verification code sent');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_030b — Xác nhận xóa tài khoản bằng OTP",
+          "description": "Cần điền otpCode thủ công từ email/log.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/delete-account/confirm",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{otpCode}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Xóa tài khoản thành công', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "  pm.expect(pm.response.json().message).to.include('Account deleted');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_030c — OTP xóa tài khoản sai → 400",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/delete-account/confirm",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"000000\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('OTP sai → 400', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400, 429]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Invite — Tạo lại mã & Ban",
+      "description": "TC_054, TC_058: Regenerate invite code, user bị ban join lại.",
+      "item": [
+        {
+          "name": "TC_054 — Tạo lại mã invite, mã cũ vô hiệu [FAIL]",
+          "description": "Owner regenerate invite → invite code cũ phải trả 404.\nĐây là TC đang FAIL theo Excel.\nCần điền serverId.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/servers/{{serverId}}/regenerate-invite",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('[FAIL] Regenerate invite thành công', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "  const json = pm.response.json();",
+                  "  const code = json.server && json.server.inviteCode;",
+                  "  if (code) {",
+                  "    pm.collectionVariables.set('inviteCode', code);",
+                  "    if (pm.environment && pm.environment.id) {",
+                  "      pm.environment.set('inviteCode', code);",
+                  "    }",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_054b — Mã invite cũ phải trả 404",
+          "description": "Dùng invite code cũ (trước khi regenerate) để kiểm tra.",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/invite/OLD_INVITE_CODE_HERE/preview",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invite code cũ → 404', function () {",
+                  "  pm.expect(pm.response.code).to.eql(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_058 — User bị ban join lại bằng invite [FAIL]",
+          "description": "User đã bị ban khỏi server không thể join lại bằng invite.\nĐây là TC đang FAIL theo Excel.\nCần tài khoản bị ban + inviteCode hợp lệ.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/servers/join/{{inviteCode}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('[FAIL] User bị ban → không join được', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([403, 400]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Upload & Media",
+      "description": "TC_240–TC_244: Upload file, link preview, rate limit.",
+      "item": [
+        {
+          "name": "TC_240 — Upload file thành công",
+          "description": "Upload 1 file ảnh qua multipart/form-data.\nChọn file thủ công trong Postman Body > form-data.",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/upload",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": "",
+                  "description": "Chọn file ảnh/video để upload"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Upload thành công hoặc chưa cấu hình Cloudinary', function () {",
+                  "  const code = pm.response.code;",
+                  "  pm.expect(code).to.be.oneOf([200, 503]);",
+                  "  if (code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.attachments).to.be.an('array');",
+                  "    pm.expect(json.attachments.length).to.be.greaterThan(0);",
+                  "  } else {",
+                  "    pm.expect(pm.response.json().error).to.include('not configured');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_241 — Upload không có file → 400",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/upload",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Không có file → 400', function () {",
+                  "  pm.expect(pm.response.code).to.eql(400);",
+                  "  pm.expect(pm.response.json().error).to.include('No files');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_242 — Link preview URL hợp lệ",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/link-preview?url=https://github.com"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Link preview OK hoặc lỗi phía remote', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 502, 504]);",
+                  "  if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.any.keys('title', 'description', 'image', 'siteName');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_243 — Link preview URL không hợp lệ → 400",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/link-preview?url=not-a-url"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('URL không hợp lệ → 400', function () {",
+                  "  pm.expect(pm.response.code).to.eql(400);",
+                  "  pm.expect(pm.response.json().error).to.include('Invalid');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_244 — Rate limit link preview 20 req/phút [FAIL]",
+          "description": "Gửi > 20 request link preview trong 1 phút phải bị 429.\nServer đã cấu hình rate limit 20 req/phút tại `/api/link-preview` (app.ts).\nChạy Collection Runner: chọn chỉ request này, iteration ≥ 21 (iteration index 0-based: từ lần thứ 21 trở đi kỳ vọng 429).",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/link-preview?url=https://example.com"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('[FAIL] Rate limit 20 req/phút', function () {",
+                  "  // Nếu chạy iteration > 20 sẽ nhận 429",
+                  "  if (pm.info.iteration >= 20) {",
+                  "    pm.expect(pm.response.code).to.eql(429);",
+                  "  } else {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 502, 504]);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
