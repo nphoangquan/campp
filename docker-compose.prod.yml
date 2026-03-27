@@ -1,0 +1,58 @@
+# ============================================================
+# docker-compose.prod.yml — Production overrides
+#
+# File này KHÔNG chạy độc lập — dùng kết hợp với docker-compose.yml:
+#   docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Override những gì khác biệt giữa dev và production:
+#   - Không expose port DB ra host (MongoDB không lộ ra ngoài)
+#   - Image dùng version tag thật thay vì :latest
+#   - Giới hạn tài nguyên (RAM/CPU) cho từng container
+#   - Logging có rotation (tránh đầy disk)
+# ============================================================
+
+services:
+  # --------------------------------------------------------
+  # MongoDB — production hardening
+  # --------------------------------------------------------
+  mongo:
+    # Override ports thành rỗng → DB không lộ ra host
+    # Vẫn kết nối được từ server container qua Docker network nội bộ
+    ports: []
+    # mem_limit / cpus: key dùng cho docker-compose standalone
+    # (deploy.resources chỉ có tác dụng với Docker Swarm)
+    mem_limit: 512m
+    cpus: 0.5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # --------------------------------------------------------
+  # Backend — production hardening
+  # --------------------------------------------------------
+  server:
+    # Dùng version tag cụ thể thay vì :latest
+    # Đổi thủ công khi release version mới
+    image: nphoangquan/camp-server:1.0.0
+    mem_limit: 256m
+    cpus: 0.5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # --------------------------------------------------------
+  # Frontend — production hardening
+  # --------------------------------------------------------
+  client:
+    image: nphoangquan/camp-client:1.0.0
+    mem_limit: 64m
+    cpus: 0.25
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
