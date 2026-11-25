@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { serverApi } from '../services/api/server.api';
 import { useServerStore } from '../stores/useServerStore';
 import { toast } from 'sonner';
+import RailShell from '../components/firstrun/RailShell';
+import { ErrorLine, PlateHeading, PrimaryButton } from '../components/firstrun/parts';
 
 interface InvitePreview {
   name: string;
@@ -22,11 +24,7 @@ export default function InvitePage() {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('app-loading', loading || joining);
-    return () => document.documentElement.classList.remove('app-loading');
-  }, [loading, joining]);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!code) {
@@ -40,7 +38,6 @@ export default function InvitePage() {
       .catch((err) => {
         const msg = err?.response?.data?.error || 'Invalid invite link';
         setError(msg);
-        toast.error(msg);
       })
       .finally(() => setLoading(false));
   }, [code, navigate]);
@@ -48,6 +45,7 @@ export default function InvitePage() {
   const handleJoin = async () => {
     if (!code || joining) return;
     setJoining(true);
+    setJoinError(null);
     try {
       const { server, alreadyMember } = await serverApi.joinByInvite(code);
       addServer(server);
@@ -60,8 +58,8 @@ export default function InvitePage() {
       }
       navigate(`/channels/${server._id}`, { replace: true });
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to join';
-      toast.error(msg);
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || "We couldn't join this server. Try again.";
+      setJoinError(msg);
     } finally {
       setJoining(false);
     }
@@ -71,124 +69,83 @@ export default function InvitePage() {
     navigate('/channels', { replace: true });
   };
 
-  const getBgStyle = (p: InvitePreview | null) => {
-    if (!p?.banner) return {};
-    const isImg = p.banner.startsWith('http://') || p.banner.startsWith('https://');
-    return isImg ? { backgroundImage: `url(${p.banner})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { backgroundColor: p.banner };
-  };
-
   if (!code) return null;
 
-  if (joining) {
-    return (
-      <div className="fixed inset-0 h-full min-h-dvh w-full overflow-hidden flex items-center justify-center bg-layer-1" style={getBgStyle(preview)}>
-        <div className="absolute inset-0 bg-black/40" aria-hidden="true" />
-        <div className="relative z-10 bg-[#2b2d31]/95 backdrop-blur-sm rounded-2xl px-12 py-10 flex flex-col items-center gap-6 shadow-2xl border border-white/5">
-          <div className="w-14 h-14 rounded-2xl bg-accent-500 flex items-center justify-center shadow-lg shadow-accent-500/20">
-            <span className="text-white text-2xl font-bold">C</span>
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-2 border-accent-500/30 border-t-accent-500 rounded-full animate-spin" />
-            <p className="text-white font-medium">Joining server...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const steps = [
+    { label: 'Invite', state: 'current' as const },
+    { label: 'In the server', state: 'pending' as const },
+  ];
+  const aside = (
+    <Link to="/channels" className="fr-link text-fg">
+      Back to Camp
+    </Link>
+  );
 
   if (loading) {
     return (
-      <div className="fixed inset-0 h-full min-h-dvh w-full overflow-hidden flex items-center justify-center bg-layer-0">
-        <div className="flex flex-col items-center gap-6">
-          <div className="w-14 h-14 rounded-2xl bg-accent-500 flex items-center justify-center shadow-lg shadow-accent-500/20">
-            <span className="text-white text-2xl font-bold">C</span>
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-2 border-accent-500/30 border-t-accent-500 rounded-full animate-spin" />
-            <p className="text-[#80848E] text-sm">Loading invite...</p>
-          </div>
+      <RailShell steps={steps} aside={aside} plateKey="loading">
+        <div role="status" aria-label="Loading invite" className="space-y-4">
+          <span className="block h-12 w-3/4 border-[1.5px] border-dashed border-line" />
+          <span className="block h-5 w-1/2 border-[1.5px] border-dashed border-line" />
+          <span className="block h-[52px] w-full mt-8 border-[1.5px] border-dashed border-line" />
         </div>
-      </div>
+      </RailShell>
     );
   }
 
   if (error || !preview) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-layer-1">
-        <div className="bg-[#2b2d31]/90 backdrop-blur-sm rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl border border-white/5">
-          <div className="w-16 h-16 rounded-full bg-layer-4 flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl text-[#80848E]">!</span>
-          </div>
-          <h1 className="text-xl font-semibold text-white mb-2">Invalid Invite</h1>
-          <p className="text-[#B5BAC1] text-sm mb-6">
-            {error || 'This invite link may have expired or been revoked.'}
-          </p>
-          <button onClick={handleCancel} className="btn-secondary w-full py-2.5">
-            Back to Camp
+      <RailShell steps={steps} aside={aside} plateKey="error">
+        <PlateHeading title="This invite doesn't work" />
+        <ErrorLine>{error || 'The link may have expired or been revoked.'}</ErrorLine>
+        <p className="mt-4 text-fg-3">Ask whoever sent it for a fresh link, or start your own server.</p>
+        <div className="mt-8 grid gap-3">
+          <Link to="/welcome" className="fr-btn no-underline">
+            <span>Start my own server</span>
+          </Link>
+          <button type="button" onClick={handleCancel} className="fr-btn-ghost">
+            <span>Back to Camp</span>
           </button>
         </div>
-      </div>
+      </RailShell>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-layer-1" style={getBgStyle(preview)}>
-      {preview.banner && (
-        <div className="absolute inset-0 bg-black/40" aria-hidden="true" />
-      )}
-      <div className="relative z-10 bg-[#2b2d31]/90 backdrop-blur-sm rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border border-white/5">
-        <p className="text-[#B5BAC1] text-sm text-center mb-6">You have been invited to join</p>
-
-        <div className="flex flex-col items-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-layer-4 flex items-center justify-center overflow-hidden mb-4 ring-4 ring-layer-5">
-            {preview.icon ? (
-              <img src={preview.icon} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-2xl font-bold text-accent-400">
-                {preview.name.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
-          <h1 className="text-xl font-semibold text-white text-center">{preview.name}</h1>
-          {preview.description && (
-            <p className="text-[#B5BAC1] text-sm text-center mt-2 max-w-xs">{preview.description}</p>
+    <RailShell steps={steps} aside={aside} plateKey="invite">
+      <div className="flex items-center gap-5 mb-6">
+        <div className="w-16 h-16 shrink-0 bg-primary text-on-primary flex items-center justify-center overflow-hidden rounded-[2px]">
+          {preview.icon ? (
+            <img src={preview.icon} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="font-semibold text-2xl">{preview.name.charAt(0).toUpperCase()}</span>
           )}
-          <div className="flex items-center gap-4 mt-2 text-sm text-[#B5BAC1]">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-online" aria-hidden="true" />
-              {preview.onlineCount.toLocaleString()} Online
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#80848E]" aria-hidden="true" />
-              {preview.memberCount.toLocaleString()} Members
-            </span>
-          </div>
         </div>
-
-        <div className="space-y-3">
-          <button
-            onClick={handleJoin}
-            disabled={joining}
-            className="w-full py-3 rounded-md font-medium text-white bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {joining ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Accepting Invite...
-              </span>
-            ) : (
-              'Accept Invite'
-            )}
-          </button>
-          <button
-            onClick={handleCancel}
-            disabled={joining}
-            className="w-full py-2.5 text-sm text-[#B5BAC1] hover:text-white transition-colors disabled:opacity-50"
-          >
-            Cancel
-          </button>
-        </div>
+        <h1 className="fr-display min-w-0 break-words">{preview.name}</h1>
       </div>
-    </div>
+      <p className="text-fg-3 mb-6 max-w-[48ch]">
+        {preview.description || 'You were invited to join this server.'}
+      </p>
+      <dl className="flex gap-8 border-y-[1.5px] border-fg py-4 mb-8">
+        <div>
+          <dt className="fr-label text-fg-3">Online now</dt>
+          <dd className="mt-1 flex items-center gap-2 font-pixel text-[30px] leading-none">
+            <span aria-hidden="true" className="block w-3 h-3 rounded-full bg-online ring-1 ring-fg" />
+            {preview.onlineCount.toLocaleString()}
+          </dd>
+        </div>
+        <div>
+          <dt className="fr-label text-fg-3">Members</dt>
+          <dd className="mt-1 font-pixel text-[30px] leading-none">{preview.memberCount.toLocaleString()}</dd>
+        </div>
+      </dl>
+      {joinError && <div className="mb-4"><ErrorLine>{joinError}</ErrorLine></div>}
+      <PrimaryButton onClick={handleJoin} disabled={joining} busy={joining} busyLabel="Joining">
+        Accept invite
+      </PrimaryButton>
+      <button type="button" onClick={handleCancel} disabled={joining} className="mt-4 fr-link text-fg">
+        Not now
+      </button>
+    </RailShell>
   );
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { VariableSizeList as List } from 'react-window';
-import { MoreVertical, X, Crown, Search, Shield } from 'lucide-react';
+import { MoreVertical, X, Crown, Search, Shield, Volume2, Check } from 'lucide-react';
 import UserProfilePopup from '../ui/UserProfilePopup';
 import { useServerStore } from '../../stores/useServerStore';
 import { useAuthStore } from '../../stores/useAuthStore';
@@ -14,6 +14,19 @@ interface Props {
   onOpenDM?: (conversationId: string) => void;
   onClose?: () => void;
   showCloseButton?: boolean;
+}
+
+import StatusDot from '../ui/StatusDot';
+import { avatarStyle, identityColor } from '../../utils/identity';
+import { useVoiceStore } from '../../stores/useVoiceStore';
+
+function GroupHeader({ label, count }: { label: string; count: number }) {
+  return (
+    <h3 className="flex items-center gap-2 px-3 pt-4 pb-1 text-fg-4 text-[11px] font-semibold uppercase tracking-[0.08em]">
+      <span className="truncate">{label}</span>
+      <span className="text-[11px] font-semibold tabular-nums tracking-normal text-fg-3">{count}</span>
+    </h3>
+  );
 }
 
 export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props) {
@@ -85,13 +98,17 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
     return () => document.removeEventListener('mousedown', handleClick);
   }, [menuMemberId]);
 
-  const statusColor: Record<string, string> = {
-    online: 'bg-online',
-    idle: 'bg-idle',
-    dnd: 'bg-dnd',
-    offline: 'bg-[#80848E]',
-    invisible: 'bg-[#80848E]',
+  const voiceStates = useVoiceStore((st) => st.voiceStates);
+  const voiceRoomOf = (userId: string) => {
+    for (const [cid, users] of Object.entries(voiceStates)) {
+      if (users?.some((u) => u.userId === userId)) {
+        const ch = (currentServer?.channels ?? []).find((c) => (typeof c === 'string' ? c : c._id) === cid);
+        return typeof ch === 'object' && ch ? ch.name : 'voice';
+      }
+    }
+    return null;
   };
+
 
   const getMemberHighestRole = (memberId: string): Role | null => {
     if (!currentServer) return null;
@@ -233,7 +250,7 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
     setListHeight(el.clientHeight);
     return () => ro.disconnect();
   }, []);
-  const HEADER_HEIGHT = 32;
+  const HEADER_HEIGHT = 40;
   const MEMBER_HEIGHT = 44;
 
   const getItemSize = useCallback(
@@ -245,13 +262,15 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
     const isSelf = member._id === user?._id;
     const effectiveMember = isSelf && user ? { ...member, avatar: user.avatar, banner: user.banner, displayName: user.displayName, activityStatus: user.activityStatus } : member;
     const isServerOwner = member._id === currentServer?.ownerId;
-    const highestRole = getMemberHighestRole(member._id);
-    const nameColor = highestRole?.color || (member.status === 'offline' ? '#5C5F66' : '#B5BAC1');
+    const isOffline = member.status === 'offline' || member.status === 'invisible';
+    // One colour per person everywhere; roles show through the group header and the crown.
+    const nameColor = isOffline ? 'var(--fg-4)' : identityColor(member._id);
+    const voiceRoom = voiceRoomOf(member._id);
 
     return (
       <div
         key={member._id}
-        className="flex items-center gap-2.5 px-2 py-1.5 mx-1 rounded hover:bg-layer-3/50 transition-colors group/member relative cursor-default"
+        className={`flex items-center gap-2.5 px-2 h-[42px] mx-1 rounded-[2px] hover:bg-surface-2 transition-colors group/member relative cursor-default`}
       >
         <button
           type="button"
@@ -261,16 +280,16 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
           }}
           className="relative shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
         >
-          <div className="w-8 h-8 rounded-full bg-accent-600 flex items-center justify-center overflow-hidden">
+          <div style={isOffline ? undefined : avatarStyle(member._id)} className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden ${isOffline ? 'bg-raised text-fg-4 grayscale' : ''}`}>
             {effectiveMember.avatar ? (
               <img src={effectiveMember.avatar} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-white text-xs font-semibold">
+              <span className="text-xs font-semibold">
                 {effectiveMember.displayName.charAt(0).toUpperCase()}
               </span>
             )}
           </div>
-          <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 ${statusColor[member.status] || statusColor.offline} border-[2.5px] border-layer-1 rounded-full`} />
+          <StatusDot status={member.status} className="absolute -bottom-0.5 -right-0.5" />
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
@@ -280,15 +299,20 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
                 e.stopPropagation();
                 setProfilePopup({ user: effectiveMember, position: { x: e.clientX, y: e.clientY }, isServerOwner: isServerOwner });
               }}
-              className="text-sm truncate font-medium text-left hover:underline cursor-pointer"
+              className="text-[14px] truncate font-semibold text-left hover:underline underline-offset-2 cursor-pointer"
               style={{ color: nameColor }}
             >
               {effectiveMember.displayName}
             </button>
-            {isServerOwner && <Crown className="w-3.5 h-3.5 text-idle shrink-0" />}
+            {isServerOwner && <Crown aria-label="Server owner" className="w-3.5 h-3.5 text-unread shrink-0" />}
           </div>
-          {effectiveMember.activityStatus && (
-            <p className="text-[#80848E] text-2xs truncate">{effectiveMember.activityStatus}</p>
+          {voiceRoom ? (
+            <p className="flex items-center gap-1 text-fg-3 text-[12px] truncate">
+              <Volume2 aria-hidden="true" className="w-3 h-3 text-online shrink-0" />
+              In {voiceRoom}
+            </p>
+          ) : (
+            effectiveMember.activityStatus && <p className="text-fg-3 text-[12px] truncate">{effectiveMember.activityStatus}</p>
           )}
         </div>
 
@@ -307,7 +331,8 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
                 setShowRoleSubmenu(false);
               }
             }}
-            className="opacity-0 group-hover/member:opacity-100 text-[#80848E] hover:text-white cursor-pointer transition-all p-0.5 rounded hover:bg-layer-4"
+            aria-label={`Manage ${effectiveMember.displayName}`}
+            className="opacity-0 group-hover/member:opacity-100 focus-visible:opacity-100 text-fg-3 hover:text-fg cursor-pointer transition-all p-1 rounded-[2px] hover:bg-raised"
           >
             <MoreVertical className="w-4 h-4" />
           </button>
@@ -338,15 +363,15 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
     return createPortal(
       <div
         ref={menuRef}
-        className="fixed z-[100] bg-layer-1 rounded-lg shadow-2xl py-1.5 w-48 animate-in fade-in slide-in-from-top-1 duration-100 border border-layer-5"
+        className="fixed z-[100] bg-surface rounded-[2px] py-1.5 w-48 border border-line-strong"
         style={{
           left: Math.min(menuPosition.x + 4, window.innerWidth - 200),
           top: Math.min(menuPosition.y, window.innerHeight - 320),
         }}
       >
         <div className="px-3 py-1.5 border-b border-layer-5 mb-1">
-          <p className="text-white text-xs font-semibold truncate">{member.displayName}</p>
-          <p className="text-[#5C5F66] text-2xs capitalize">Current role: {memberCurrentRole}</p>
+          <p className="text-fg text-xs font-semibold truncate">{member.displayName}</p>
+          <p className="text-fg-4 text-2xs capitalize">Current role: {memberCurrentRole}</p>
         </div>
 
         {/* Manage Roles submenu — opens below so it stays on screen (member list is on the right) */}
@@ -357,16 +382,16 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
               e.stopPropagation();
               setShowRoleSubmenu(!showRoleSubmenu);
             }}
-            className="w-full text-left px-3 py-1.5 text-sm text-[#B5BAC1] hover:bg-accent-500 hover:text-white cursor-pointer transition-colors rounded-sm flex items-center gap-2"
+            className="w-full text-left px-3 py-1.5 text-sm text-fg-2 hover:bg-accent-500 hover:text-on-primary cursor-pointer transition-colors rounded-sm flex items-center gap-2"
           >
             <Shield className="w-3.5 h-3.5" />
             Manage Roles
           </button>
           {showRoleSubmenu && (
-            <div className="absolute left-0 top-full mt-0.5 bg-layer-1 rounded-lg shadow-2xl py-1.5 w-52 border border-layer-5 z-[101] max-h-64 overflow-y-auto">
-              <p className="px-3 py-1 text-[#80848E] text-2xs font-bold uppercase">Assign server role</p>
+            <div className="absolute left-0 top-full mt-0.5 bg-surface rounded-[2px] py-1.5 w-52 border border-line-strong z-[101] max-h-64 overflow-y-auto">
+              <p className="px-3 py-1 text-fg-3 text-2xs font-bold uppercase">Assign server role</p>
               {assignableServerRoles.length === 0 ? (
-                <p className="px-3 py-2 text-[#5C5F66] text-2xs">No server roles to assign</p>
+                <p className="px-3 py-2 text-fg-4 text-2xs">No server roles to assign</p>
               ) : (
                 assignableServerRoles.map((role) => {
                   const isCurrentRole = memberCurrentRole === role.type;
@@ -379,18 +404,18 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
                         handleAssignRole(menuMemberId, role);
                       }}
                       disabled={assigningRole === role._id || isCurrentRole}
-                      className={`w-full text-left px-3 py-1.5 text-sm cursor-pointer transition-colors rounded-sm flex items-center gap-2 ${isCurrentRole ? 'text-accent-400 bg-accent-500/10' : 'text-[#B5BAC1] hover:bg-accent-500 hover:text-white'} disabled:opacity-50`}
+                      className={`w-full text-left px-3 py-1.5 text-sm cursor-pointer transition-colors rounded-sm flex items-center gap-2 ${isCurrentRole ? 'text-accent-400 bg-accent-500/10' : 'text-fg-2 hover:bg-accent-500 hover:text-on-primary'} disabled:opacity-50`}
                     >
                       <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: role.color }} />
                       {role.name}
-                      {isCurrentRole && <span className="text-2xs ml-auto">✓</span>}
+                      {isCurrentRole && <Check aria-label="Assigned" className="w-3.5 h-3.5 ml-auto" />}
                     </button>
                   );
                 })
               )}
               {customRoles.length > 0 && (
                 <>
-                  <p className="px-3 py-1.5 pt-2 text-[#80848E] text-2xs font-bold uppercase border-t border-layer-5 mt-1">Custom roles</p>
+                  <p className="px-3 py-1.5 pt-2 text-fg-3 text-2xs font-bold uppercase border-t border-layer-5 mt-1">Custom roles</p>
                   {customRoles.map((role) => {
                     const hasCustomRole = memberCustomRoleIds.includes(role._id);
                     return (
@@ -402,11 +427,11 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
                           handleToggleCustomRole(menuMemberId, role);
                         }}
                         disabled={assigningRole === role._id}
-                        className={`w-full text-left px-3 py-1.5 text-sm cursor-pointer transition-colors rounded-sm flex items-center gap-2 ${hasCustomRole ? 'text-accent-400 bg-accent-500/10' : 'text-[#B5BAC1] hover:bg-accent-500 hover:text-white'} disabled:opacity-50`}
+                        className={`w-full text-left px-3 py-1.5 text-sm cursor-pointer transition-colors rounded-sm flex items-center gap-2 ${hasCustomRole ? 'text-accent-400 bg-accent-500/10' : 'text-fg-2 hover:bg-accent-500 hover:text-on-primary'} disabled:opacity-50`}
                       >
                         <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: role.color }} />
                         {role.name}
-                        {hasCustomRole && <span className="text-2xs ml-auto">✓</span>}
+                        {hasCustomRole && <Check aria-label="Assigned" className="w-3.5 h-3.5 ml-auto" />}
                       </button>
                     );
                   })}
@@ -418,13 +443,13 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
 
         <button
           onClick={() => { setShowReasonModal({ action: 'mute', memberId: member._id, memberName: member.displayName }); }}
-          className="w-full text-left px-3 py-1.5 text-sm text-[#B5BAC1] hover:bg-accent-500 hover:text-white cursor-pointer transition-colors rounded-sm mx-0"
+          className="w-full text-left px-3 py-1.5 text-sm text-fg-2 hover:bg-accent-500 hover:text-on-primary cursor-pointer transition-colors rounded-sm mx-0"
         >
           Mute
         </button>
         <button
           onClick={() => handleUnmute(member._id)}
-          className="w-full text-left px-3 py-1.5 text-sm text-[#B5BAC1] hover:bg-accent-500 hover:text-white cursor-pointer transition-colors rounded-sm"
+          className="w-full text-left px-3 py-1.5 text-sm text-fg-2 hover:bg-accent-500 hover:text-on-primary cursor-pointer transition-colors rounded-sm"
         >
           Unmute
         </button>
@@ -452,10 +477,8 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
       if (!item) return null;
       if (item.type === 'header') {
         return (
-          <div style={style} className="px-3 pt-1 pb-0.5">
-            <h3 className="text-[#80848E] text-2xs font-bold uppercase tracking-wider">
-              {item.label} &mdash; {item.count}
-            </h3>
+          <div style={style} className="px-1 pt-1">
+            <GroupHeader label={item.label} count={item.count} />
           </div>
         );
       }
@@ -470,28 +493,29 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
 
   return (
     <>
-      <div className="w-60 shrink-0 bg-layer-1 flex flex-col h-full">
+      <aside aria-label="Members" className="w-60 shrink-0 bg-surface border-l border-line flex flex-col h-full">
         {showCloseButton && onClose && (
-          <div className="h-12 px-2 flex items-center border-b border-layer-3 shrink-0">
+          <div className="h-12 px-2 flex items-center border-b border-line shrink-0">
             <button
               onClick={onClose}
-              className="p-2 rounded text-[#80848E] hover:text-white hover:bg-layer-4 transition-colors"
+              className="p-2 rounded text-fg-3 hover:text-fg hover:bg-layer-4 transition-colors"
               aria-label="Close member list"
             >
               <X className="w-5 h-5" />
             </button>
-            <span className="text-white font-semibold text-sm">Members</span>
+            <span className="text-fg font-semibold text-sm">Members</span>
           </div>
         )}
-        <div className="px-2 pt-2 shrink-0">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#80848E]" />
+        <div className="px-2 h-12 flex items-center border-b border-line shrink-0">
+          <div className="relative w-full">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-3" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search members"
-              className="w-full bg-layer-0 text-[#B5BAC1] text-sm pl-8 pr-2 py-1.5 rounded border border-layer-5 focus:outline-none focus:border-accent-500 placeholder-[#5C5F66]"
+              aria-label="Search members"
+              className="w-full bg-surface-2 text-fg text-[13px] pl-8 pr-2 h-8 rounded-[2px] border border-transparent focus:outline-none focus:border-fg focus:bg-surface placeholder-fg-4 transition-colors"
             />
           </div>
         </div>
@@ -514,14 +538,12 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
             ) : (
               <div className="overflow-y-auto py-1">
                 {flatItems.length === 0 ? (
-                  <p className="text-[#5C5F66] text-sm text-center py-6">No members found</p>
+                  <p className="text-fg-4 text-sm text-center py-6">No members found</p>
                 ) : (
                   flatItems.map((item, i) =>
                     item.type === 'header' ? (
-                      <div key={`h-${i}`} className="pt-4 px-1">
-                        <h3 className="text-[#80848E] text-2xs font-bold uppercase tracking-wider px-3 mb-1">
-                          {item.label} &mdash; {item.count}
-                        </h3>
+                      <div key={`h-${i}`} className="px-1">
+                        <GroupHeader label={item.label} count={item.count} />
                       </div>
                     ) : (
                       <div key={item.member._id} className="px-1">
@@ -545,17 +567,15 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
           ) : (
             <div className="flex-1 overflow-y-auto">
               {groups.map((group, gi) => (
-                <div key={gi} className="pt-4 px-1">
-                  <h3 className="text-[#80848E] text-2xs font-bold uppercase tracking-wider px-3 mb-1">
-                    {group.label} &mdash; {group.members.length}
-                  </h3>
+                <div key={gi} className="px-1">
+                  <GroupHeader label={group.label} count={group.members.length} />
                   {group.members.map(renderMember)}
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
+      </aside>
 
       {/* Member action menu - rendered via Portal */}
       {renderMemberMenu()}
@@ -574,15 +594,15 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
       {/* Moderation modal */}
       {showReasonModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setShowReasonModal(null)}>
-          <div className="bg-layer-1 rounded-xl w-full max-w-md mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface border border-line-strong rounded-[2px] w-full max-w-md mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-white font-bold text-lg capitalize">{showReasonModal.action} Member</h3>
-                <button onClick={() => setShowReasonModal(null)} className="text-[#80848E] hover:text-white cursor-pointer p-1 rounded hover:bg-layer-4 transition-colors">
+                <h3 className="text-fg font-bold text-lg capitalize">{showReasonModal.action} Member</h3>
+                <button onClick={() => setShowReasonModal(null)} className="text-fg-3 hover:text-fg cursor-pointer p-1 rounded hover:bg-layer-4 transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <p className="text-[#80848E] text-sm mb-5">
+              <p className="text-fg-3 text-sm mb-5">
                 {showReasonModal.action === 'kick'
                   ? `${showReasonModal.memberName} will be removed from the server but can rejoin with an invite.`
                   : showReasonModal.action === 'ban'
@@ -592,7 +612,7 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
 
               {showReasonModal.action === 'mute' && (
                 <div className="mb-4">
-                  <label className="block text-xs font-bold text-[#B5BAC1] uppercase tracking-wider mb-2">Duration</label>
+                  <label className="block text-xs font-bold text-fg-2 uppercase tracking-wider mb-2">Duration</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { value: 1, label: '1 min' },
@@ -605,9 +625,9 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
                       <button
                         key={opt.value}
                         onClick={() => setMuteDuration(opt.value)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors ${muteDuration === opt.value
-                          ? 'bg-accent-500 text-white'
-                          : 'bg-layer-3 text-[#B5BAC1] hover:bg-layer-4'
+                        className={`px-3 py-2 rounded-[2px] text-sm font-medium cursor-pointer transition-colors ${muteDuration === opt.value
+                          ? 'bg-accent-500 text-on-primary'
+                          : 'bg-layer-3 text-fg-2 hover:bg-layer-4'
                           }`}
                       >
                         {opt.label}
@@ -618,7 +638,7 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
               )}
 
               <div className="mb-2">
-                <label className="block text-xs font-bold text-[#B5BAC1] uppercase tracking-wider mb-2">Reason</label>
+                <label className="block text-xs font-bold text-fg-2 uppercase tracking-wider mb-2">Reason</label>
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
@@ -629,16 +649,16 @@ export default function MemberList({ onOpenDM, onClose, showCloseButton }: Props
             </div>
 
             <div className="bg-layer-0 px-6 py-4 flex gap-3 justify-end">
-              <button onClick={() => setShowReasonModal(null)} className="text-sm text-[#B5BAC1] hover:text-white hover:underline cursor-pointer px-4 py-2 transition-colors">
+              <button onClick={() => setShowReasonModal(null)} className="text-sm text-fg-2 hover:text-fg hover:underline cursor-pointer px-4 py-2 transition-colors">
                 Cancel
               </button>
               <button
                 onClick={handleAction}
                 className={`text-sm font-medium px-6 py-2 rounded cursor-pointer transition-colors ${showReasonModal.action === 'ban'
-                  ? 'bg-danger-500 text-white hover:bg-danger-400'
+                  ? 'bg-danger-500 text-on-primary hover:bg-danger-400'
                   : showReasonModal.action === 'kick'
-                    ? 'bg-warning-500 text-white hover:brightness-110'
-                    : 'bg-accent-500 text-white hover:bg-accent-400'
+                    ? 'bg-warning-500 text-on-primary hover:brightness-110'
+                    : 'bg-accent-500 text-on-primary hover:bg-accent-400'
                   }`}
               >
                 {showReasonModal.action === 'kick' ? 'Kick' : showReasonModal.action === 'ban' ? 'Ban' : 'Mute'}

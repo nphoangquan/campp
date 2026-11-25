@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   Hash, Volume2, Plus, ChevronDown, ChevronRight, LogOut,
-  Settings, X, Trash2, Edit2, UserPlus, DoorOpen, UserCircle, Bell, Mic,
+  Settings, X, Trash2, Edit2, UserPlus, DoorOpen, UserCircle, Bell, Mic, Sun, Moon,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useServerStore } from '../../stores/useServerStore';
@@ -32,9 +32,14 @@ interface Props {
   onReopenVoicePanel?: () => void;
 }
 
+import { avatarStyle, nameStyle } from '../../utils/identity';
+import StatusDot from '../ui/StatusDot';
+import { useTheme } from '../../hooks/useTheme';
+
 export default function ChannelSidebar({ onLogout, onClose, onChannelSelect, onReopenVoicePanel }: Props) {
   const user = useAuthStore((s) => s.user);
   const { currentServer, categories, uncategorizedChannels, currentChannel, setCurrentChannel, setChannelData, members, unreadCounts } = useServerStore();
+  const { resolved: resolvedTheme, toggle: toggleTheme } = useTheme();
   const { voiceStates, connected: voiceConnected, channelId: voiceChannelId, inputVolume } = useVoiceStore();
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const [showSettings, setShowSettings] = useState(false);
@@ -82,8 +87,8 @@ export default function ChannelSidebar({ onLogout, onClose, onChannelSelect, onR
     online: 'bg-online',
     idle: 'bg-idle',
     dnd: 'bg-dnd',
-    offline: 'bg-[#80848E]',
-    invisible: 'bg-[#80848E]',
+    offline: 'bg-fg-4',
+    invisible: 'bg-fg-4',
   };
 
   // Close context menu & server menu & status menu on outside click
@@ -293,14 +298,16 @@ const handleSelectChannel = (channel: Channel) => {
         <div
           onContextMenu={(e) => handleContextMenu(e, 'channel', channel)}
           onClick={() => handleSelectChannel(channel)}
-          className={`w-full flex items-center gap-1.5 px-2 py-1 rounded text-sm cursor-pointer transition-colors group/ch ${
+          className={`w-full flex items-center gap-2 px-2 h-8 rounded-[2px] text-[14px] cursor-pointer transition-colors duration-150 group/ch ${
             isVoice
               ? isInThisVoice
-                ? 'bg-layer-5/50 text-white'
-                : 'text-[#80848E] hover:text-[#B5BAC1] hover:bg-layer-4'
+                ? 'bg-raised text-fg font-medium'
+                : 'text-fg-3 hover:text-fg hover:bg-surface-2'
               : currentChannel?._id === channel._id
-                ? 'bg-layer-5 text-white'
-                : 'text-[#80848E] hover:text-[#B5BAC1] hover:bg-layer-4'
+                ? 'bg-raised text-fg font-medium'
+                : (unreadCounts[channel._id] ?? 0) > 0
+                  ? 'text-fg font-semibold hover:bg-surface-2'
+                  : 'text-fg-3 hover:text-fg hover:bg-surface-2'
           }`}
         >
           {isVoice ? (
@@ -311,7 +318,7 @@ const handleSelectChannel = (channel: Channel) => {
           <span className="truncate flex-1 text-left">{channel.name}</span>
 
           {!isVoice && (unreadCounts[channel._id] ?? 0) > 0 ? (
-            <span className="shrink-0 min-w-[18px] h-[18px] rounded-full bg-accent-500 text-white text-xs font-bold flex items-center justify-center px-1">
+            <span className="shrink-0 min-w-[20px] h-[18px] bg-unread text-[#121314] text-[11px] font-semibold tabular-nums flex items-center justify-center px-1.5" aria-label={`${unreadCounts[channel._id]} unread`}>
               {(unreadCounts[channel._id] ?? 0) > 99 ? '99+' : unreadCounts[channel._id]}
             </span>
           ) : null}
@@ -326,7 +333,7 @@ const handleSelectChannel = (channel: Channel) => {
                   setEditName(channel.name);
                   setEditTopic(channel.topic || '');
                 }}
-                className="p-0.5 text-[#80848E] hover:text-[#B5BAC1] transition-colors"
+                className="p-0.5 text-fg-3 hover:text-fg-2 transition-colors"
                 title="Edit Channel"
               >
                 <Edit2 className="w-3 h-3" />
@@ -336,7 +343,7 @@ const handleSelectChannel = (channel: Channel) => {
                   e.stopPropagation();
                   setDeleteConfirm({ type: 'channel', id: channel._id, name: channel.name });
                 }}
-                className="p-0.5 text-[#80848E] hover:text-danger-400 transition-colors"
+                className="p-0.5 text-fg-3 hover:text-danger-400 transition-colors"
                 title="Delete Channel"
               >
                 <Trash2 className="w-3 h-3" />
@@ -345,18 +352,18 @@ const handleSelectChannel = (channel: Channel) => {
           )}
 
           {isVoice && voiceParticipants.length > 0 && !isOwner && (
-            <span className="text-2xs text-[#80848E] tabular-nums">{voiceParticipants.length}</span>
+            <span className="text-2xs text-fg-3 tabular-nums">{voiceParticipants.length}</span>
           )}
         </div>
 
         {isVoice && voiceParticipants.length > 0 && (
-          <div className="ml-5 mt-0.5 mb-1 space-y-px">
+          <div className="ml-6 mt-0.5 mb-1.5 pl-2 border-l border-line space-y-px">
             {voiceParticipants.map((p) => {
               const isSelf = p.userId === user?._id;
               return (
                 <div
                   key={p.userId}
-                  className="flex items-center gap-2 px-2 py-0.5 rounded hover:bg-layer-4/50 transition-colors cursor-pointer"
+                  className="flex items-center gap-2 px-2 h-7 rounded-[2px] hover:bg-surface-2 transition-colors cursor-pointer"
                   onContextMenu={
                     !isSelf
                       ? (e) => {
@@ -368,11 +375,11 @@ const handleSelectChannel = (channel: Channel) => {
                   }
                 >
                   <div className="relative">
-                    <div className={`w-5 h-5 rounded-full bg-accent-600 flex items-center justify-center overflow-hidden shrink-0 ${p.muted ? 'opacity-60' : ''}`}>
+                    <div style={avatarStyle(p.userId)} className={`w-5 h-5 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${p.muted ? 'opacity-60' : ''}`}>
                       {p.avatar ? (
                         <img src={p.avatar} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-white text-2xs font-bold">{p.displayName.charAt(0).toUpperCase()}</span>
+                        <span className="text-2xs font-bold">{p.displayName.charAt(0).toUpperCase()}</span>
                       )}
                     </div>
                     {p.muted && (
@@ -381,7 +388,7 @@ const handleSelectChannel = (channel: Channel) => {
                       </div>
                     )}
                   </div>
-                  <span className={`text-xs truncate ${p.muted ? 'text-[#5C5F66]' : 'text-[#B5BAC1]'}`}>
+                  <span style={p.muted ? undefined : nameStyle(p.userId)} className={`text-[13px] font-medium truncate ${p.muted ? 'text-fg-4' : ''}`}>
                     {p.displayName}
                   </span>
                 </div>
@@ -398,7 +405,7 @@ const handleSelectChannel = (channel: Channel) => {
   const isBannerImage = hasBanner && (bannerValue.startsWith('http://') || bannerValue.startsWith('https://'));
 
   return (
-    <div className="w-60 shrink-0 bg-layer-1 flex flex-col">
+    <div className="w-60 shrink-0 h-full bg-surface border-r border-line flex flex-col">
       {hasBanner && (
         <div className="w-full h-24 shrink-0 overflow-hidden">
           {isBannerImage ? (
@@ -410,11 +417,11 @@ const handleSelectChannel = (channel: Channel) => {
       )}
       {/* Server header with dropdown */}
       <div ref={serverMenuRef} className="relative">
-        <div className="flex items-center h-12 border-b border-layer-3 shadow-sm">
+        <div className="flex items-center h-12 border-b border-line">
           {onClose && (
             <button
               onClick={onClose}
-              className="lg:hidden shrink-0 p-2 -ml-1 text-[#80848E] hover:text-white hover:bg-layer-4 rounded transition-colors"
+              className="lg:hidden shrink-0 p-2 -ml-1 text-fg-3 hover:text-fg hover:bg-layer-4 rounded transition-colors"
               aria-label="Close channel list"
             >
               <X className="w-5 h-5" />
@@ -423,28 +430,28 @@ const handleSelectChannel = (channel: Channel) => {
           <button
             onClick={() => currentServer && setShowServerMenu((v) => !v)}
             className={`flex-1 min-w-0 h-full px-4 flex items-center justify-between cursor-pointer transition-colors ${
-              showServerMenu ? 'bg-layer-3' : 'hover:bg-layer-3/50'
+              showServerMenu ? 'bg-surface-2' : 'hover:bg-surface-2'
             }`}
           >
             {currentServer ? (
               <>
-                <span className="text-white font-semibold text-sm truncate text-left">
+                <span className="text-fg font-semibold text-[15px] tracking-[-0.01em] truncate text-left">
                   {currentServer.name}
                 </span>
-                <ChevronDown className={`w-4 h-4 text-[#80848E] shrink-0 transition-transform ${showServerMenu ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-fg-3 shrink-0 transition-transform ${showServerMenu ? 'rotate-180' : ''}`} />
               </>
             ) : (
-              <span className="text-[#80848E] text-sm">Select a server</span>
+              <span className="text-fg-3 text-sm">Select a server</span>
             )}
           </button>
         </div>
 
         {/* Server dropdown menu */}
         {showServerMenu && currentServer && (
-          <div className="absolute top-full left-2 right-2 mt-1 bg-layer-1 rounded-lg shadow-xl py-1.5 z-50 border border-layer-5">
+          <div className="absolute top-full left-2 right-2 mt-1 bg-surface rounded-[2px] py-1.5 z-50 border border-line-strong">
             <button
               onClick={() => { handleCopyInvite(); setShowServerMenu(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-accent-300 hover:bg-accent-500 hover:text-white cursor-pointer transition-colors"
+              className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-link hover:bg-surface-2 hover:text-fg cursor-pointer transition-colors"
             >
               <UserPlus className="w-4 h-4" />
               Invite People
@@ -460,7 +467,7 @@ const handleSelectChannel = (channel: Channel) => {
                   toast.success(muted ? 'Server muted' : 'Server unmuted');
                 } catch { toast.error('Failed to update'); }
               }}
-              className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-[#B5BAC1] hover:bg-accent-500 hover:text-white cursor-pointer transition-colors"
+              className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-fg-2 hover:bg-surface-2 hover:text-fg cursor-pointer transition-colors"
             >
               <Bell className="w-4 h-4" />
               {(user?.mutedServers ?? []).includes(currentServer._id) ? 'Unmute Server' : 'Mute Server'}
@@ -468,7 +475,7 @@ const handleSelectChannel = (channel: Channel) => {
             {isOwner && (
               <button
                 onClick={() => { setShowSettings(true); setShowServerMenu(false); }}
-                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-[#B5BAC1] hover:bg-accent-500 hover:text-white cursor-pointer transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-fg-2 hover:bg-surface-2 hover:text-fg cursor-pointer transition-colors"
               >
                 <Settings className="w-4 h-4" />
                 Server Settings
@@ -476,14 +483,14 @@ const handleSelectChannel = (channel: Channel) => {
             )}
             <button
               onClick={() => { openCreateChannel(); setShowServerMenu(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-[#B5BAC1] hover:bg-accent-500 hover:text-white cursor-pointer transition-colors"
+              className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-fg-2 hover:bg-surface-2 hover:text-fg cursor-pointer transition-colors"
             >
               <Plus className="w-4 h-4" />
               Create Channel
             </button>
             <button
               onClick={() => { setShowCreateCategory(true); setShowServerMenu(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-[#B5BAC1] hover:bg-accent-500 hover:text-white cursor-pointer transition-colors"
+              className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-fg-2 hover:bg-surface-2 hover:text-fg cursor-pointer transition-colors"
             >
               <Plus className="w-4 h-4" />
               Create Category
@@ -528,7 +535,7 @@ const handleSelectChannel = (channel: Channel) => {
       {/* Channel list */}
       <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
         {!currentServer && (
-          <p className="text-[#5C5F66] text-xs px-2 py-4">
+          <p className="text-fg-4 text-xs px-2 py-4">
             No servers yet. Create or join a server to get started.
           </p>
         )}
@@ -544,19 +551,19 @@ const handleSelectChannel = (channel: Channel) => {
             >
               <button
                 onClick={() => toggleCategory(cat._id)}
-                className="flex items-center gap-0.5 flex-1 min-w-0 py-1 text-[#80848E] hover:text-[#B5BAC1] transition-colors cursor-pointer"
+                className="flex items-center gap-1 flex-1 min-w-0 pt-2 pb-1 px-1 text-fg-4 hover:text-fg-2 transition-colors cursor-pointer"
               >
                 {collapsedCategories.has(cat._id) ? (
                   <ChevronRight className="w-3 h-3 shrink-0" />
                 ) : (
                   <ChevronDown className="w-3 h-3 shrink-0" />
                 )}
-                <span className="text-2xs font-bold uppercase tracking-wider truncate">{cat.name}</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] truncate">{cat.name}</span>
               </button>
               {isOwner && (
                 <button
                   onClick={() => openCreateChannel(cat._id)}
-                  className="opacity-0 group-hover/cat:opacity-100 text-[#80848E] hover:text-[#B5BAC1] cursor-pointer p-0.5 transition-all"
+                  className="opacity-0 group-hover/cat:opacity-100 text-fg-3 hover:text-fg-2 cursor-pointer p-0.5 transition-all"
                   title="Create Channel"
                 >
                   <Plus className="w-4 h-4" />
@@ -574,14 +581,14 @@ const handleSelectChannel = (channel: Channel) => {
 
         {/* Add category button */}
         {currentServer && isOwner && (
-          <div className="mt-4 pt-2 border-t border-layer-4">
+          <div className="mt-4 pt-2 border-t border-line">
             {showCreateCategory ? (
               <div className="px-1">
                 <input
                   type="text"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="w-full bg-layer-0 text-[#B5BAC1] text-sm px-2 py-1.5 rounded border border-layer-5 focus:outline-none focus:border-accent-500 mb-1"
+                  className="w-full bg-layer-0 text-fg-2 text-sm px-2 py-1.5 rounded border border-layer-5 focus:outline-none focus:border-accent-500 mb-1"
                   placeholder="Category name"
                   autoFocus
                   onKeyDown={(e) => {
@@ -591,13 +598,13 @@ const handleSelectChannel = (channel: Channel) => {
                 />
                 <div className="flex gap-1">
                   <button onClick={handleCreateCategory} disabled={!newCategoryName.trim()} className="text-xs text-accent-400 hover:text-accent-300 cursor-pointer disabled:opacity-50">Create</button>
-                  <button onClick={() => setShowCreateCategory(false)} className="text-xs text-[#80848E] hover:text-[#B5BAC1] cursor-pointer">Cancel</button>
+                  <button onClick={() => setShowCreateCategory(false)} className="text-xs text-fg-3 hover:text-fg-2 cursor-pointer">Cancel</button>
                 </div>
               </div>
             ) : (
               <button
                 onClick={() => setShowCreateCategory(true)}
-                className="flex items-center gap-1.5 px-2 py-1 text-[#5C5F66] hover:text-[#B5BAC1] text-xs transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-2 py-1 text-fg-4 hover:text-fg-2 text-xs transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Create Category</span>
@@ -611,33 +618,33 @@ const handleSelectChannel = (channel: Channel) => {
       {voiceConnected && <VoicePanel />}
 
       {/* User panel */}
-      <div className="h-[52px] bg-layer-0 flex items-center px-2 gap-2 shrink-0 relative" ref={statusMenuRef}>
+      <div className="h-[56px] bg-surface border-t border-line flex items-center px-2 gap-1 shrink-0 relative" ref={statusMenuRef}>
         <button
           onClick={() => setShowStatusMenu(!showStatusMenu)}
-          className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2.5 flex-1 min-w-0 h-11 px-1.5 rounded-[2px] cursor-pointer hover:bg-surface-2 transition-colors"
         >
           <div className="relative shrink-0">
-            <div className="w-8 h-8 rounded-full bg-accent-500 flex items-center justify-center overflow-hidden">
+            <div style={avatarStyle(user?._id)} className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden">
               {user?.avatar ? (
                 <img src={user.avatar} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-white text-xs font-semibold">
+                <span className="text-xs font-semibold">
                   {user?.displayName?.charAt(0).toUpperCase() ?? 'U'}
                 </span>
               )}
             </div>
-            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-layer-0 rounded-full ${statusColor[user?.status || 'offline'] || statusColor.offline}`} />
+            <StatusDot status={user?.status} className="absolute -bottom-0.5 -right-0.5" />
           </div>
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-white text-sm font-medium truncate">{user?.displayName}</p>
-            <p className="text-[#80848E] text-xs truncate">@{user?.username}</p>
+            <p className="text-fg text-sm font-medium truncate">{user?.displayName}</p>
+            <p className="text-fg-3 text-xs truncate">@{user?.username}</p>
           </div>
         </button>
         {showStatusMenu && (
-          <div className="absolute bottom-full left-2 right-2 mb-1 bg-layer-1 rounded-lg shadow-xl py-1.5 z-50 border border-layer-5">
+          <div className="absolute bottom-full left-2 right-2 mb-1 bg-surface rounded-[2px] py-1.5 z-50 border border-line-strong">
             <button
               onClick={() => { setShowUserSettings(true); setShowStatusMenu(false); }}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-[#B5BAC1] hover:bg-layer-4 hover:text-white cursor-pointer transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-fg-2 hover:bg-layer-4 hover:text-fg cursor-pointer transition-colors"
             >
               <UserCircle className="w-4 h-4" />
               User Settings
@@ -651,7 +658,7 @@ const handleSelectChannel = (channel: Channel) => {
                   useAuthStore.getState().setUserStatus(s);
                   setShowStatusMenu(false);
                 }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-[#B5BAC1] hover:bg-layer-4 hover:text-white cursor-pointer transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-fg-2 hover:bg-layer-4 hover:text-fg cursor-pointer transition-colors"
               >
                 <div className={`w-3 h-3 rounded-full shrink-0 ${statusColor[s]}`} />
                 <span className="capitalize">{s === 'dnd' ? 'Do Not Disturb' : s}</span>
@@ -663,15 +670,15 @@ const handleSelectChannel = (channel: Channel) => {
           <button
             type="button"
             onClick={() => setShowVoiceSettings((v) => !v)}
-            className={`p-1.5 rounded transition-colors cursor-pointer ${showVoiceSettings ? 'bg-layer-4 text-white' : 'text-[#80848E] hover:text-white hover:bg-layer-4'}`}
+            className={`p-1.5 rounded transition-colors cursor-pointer ${showVoiceSettings ? 'bg-layer-4 text-fg' : 'text-fg-3 hover:text-fg hover:bg-layer-4'}`}
             title="Voice settings"
           >
             <Mic className="w-4 h-4" />
           </button>
           {showVoiceSettings && (
-            <div className="absolute bottom-full left-0 mb-1 w-56 p-3 rounded-lg bg-layer-1 border border-layer-5 shadow-xl z-50">
-              <p className="text-[#B5BAC1] text-xs font-bold uppercase tracking-wider mb-2">Input Volume</p>
-              <p className="text-[#80848E] text-2xs mb-2">How loud you sound to others</p>
+            <div className="absolute bottom-full left-0 mb-1 w-56 p-3 rounded-[2px] bg-surface border border-line-strong z-50">
+              <p className="text-fg-2 text-xs font-bold uppercase tracking-wider mb-2">Input Volume</p>
+              <p className="text-fg-3 text-2xs mb-2">How loud you sound to others</p>
               <input
                 type="range"
                 min={0}
@@ -681,11 +688,20 @@ const handleSelectChannel = (channel: Channel) => {
                 onChange={(e) => setInputVolume(parseFloat(e.target.value))}
                 className="w-full h-2 rounded-full appearance-none bg-layer-4 cursor-pointer accent-accent-500"
               />
-              <p className="text-[#80848E] text-2xs mt-1">{Math.round(inputVolume * 100)}%</p>
+              <p className="text-fg-3 text-2xs mt-1">{Math.round(inputVolume * 100)}%</p>
             </div>
           )}
         </div>
-        <button onClick={onLogout} className="text-[#80848E] hover:text-danger-400 transition-colors cursor-pointer shrink-0" title="Log out">
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="p-1.5 rounded-[2px] text-fg-3 hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer shrink-0"
+          title={resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          aria-label={resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+        >
+          {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
+        <button onClick={onLogout} className="p-1.5 rounded-[2px] text-fg-3 hover:text-mention hover:bg-surface-2 transition-colors cursor-pointer shrink-0" title="Log out">
           <LogOut className="w-4 h-4" />
         </button>
       </div>
@@ -693,41 +709,41 @@ const handleSelectChannel = (channel: Channel) => {
       {/* Create Channel Modal */}
       {showCreateChannel && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setShowCreateChannel(false)}>
-          <div className="bg-layer-1 rounded-xl w-full max-w-md mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface border border-line-strong rounded-[2px] w-full max-w-md mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-white font-bold text-lg">Create Channel</h3>
-                <button onClick={() => setShowCreateChannel(false)} className="text-[#80848E] hover:text-white cursor-pointer p-1 rounded hover:bg-layer-4 transition-colors">
+                <h3 className="text-fg font-bold text-lg">Create Channel</h3>
+                <button onClick={() => setShowCreateChannel(false)} className="text-fg-3 hover:text-fg cursor-pointer p-1 rounded hover:bg-layer-4 transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               {createChannelCategoryId && (
-                <p className="text-[#80848E] text-xs mb-4">
+                <p className="text-fg-3 text-xs mb-4">
                   in {categories.find((c) => c._id === createChannelCategoryId)?.name}
                 </p>
               )}
 
               {/* Channel Type */}
               <div className="mb-4">
-                <label className="block text-xs font-bold text-[#B5BAC1] uppercase tracking-wider mb-2">Channel Type</label>
+                <label className="block text-xs font-bold text-fg-2 uppercase tracking-wider mb-2">Channel Type</label>
                 <div className="space-y-2">
                   <button
                     onClick={() => setNewChannelType('text')}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors border ${
+                    className={`w-full flex items-center gap-3 p-3 rounded-[2px] cursor-pointer transition-colors border ${
                       newChannelType === 'text'
                         ? 'border-accent-500 bg-accent-500/10'
                         : 'border-layer-5 bg-layer-2 hover:bg-layer-3'
                     }`}
                   >
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${newChannelType === 'text' ? 'bg-accent-500' : 'bg-layer-4'}`}>
-                      <Hash className="w-5 h-5 text-white" />
+                      <Hash className="w-5 h-5 text-fg" />
                     </div>
                     <div className="text-left">
-                      <p className="text-white text-sm font-medium">Text</p>
-                      <p className="text-[#80848E] text-xs">Send messages, images, GIFs, emoji, opinions, and puns.</p>
+                      <p className="text-fg text-sm font-medium">Text</p>
+                      <p className="text-fg-3 text-xs">Send messages, images, GIFs, emoji, opinions, and puns.</p>
                     </div>
                     <div className={`ml-auto w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center ${
-                      newChannelType === 'text' ? 'border-accent-500' : 'border-[#80848E]'
+                      newChannelType === 'text' ? 'border-accent-500' : 'border-fg-4'
                     }`}>
                       {newChannelType === 'text' && <div className="w-2.5 h-2.5 rounded-full bg-accent-500" />}
                     </div>
@@ -735,21 +751,21 @@ const handleSelectChannel = (channel: Channel) => {
 
                   <button
                     onClick={() => setNewChannelType('voice')}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors border ${
+                    className={`w-full flex items-center gap-3 p-3 rounded-[2px] cursor-pointer transition-colors border ${
                       newChannelType === 'voice'
                         ? 'border-accent-500 bg-accent-500/10'
                         : 'border-layer-5 bg-layer-2 hover:bg-layer-3'
                     }`}
                   >
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${newChannelType === 'voice' ? 'bg-accent-500' : 'bg-layer-4'}`}>
-                      <Volume2 className="w-5 h-5 text-white" />
+                      <Volume2 className="w-5 h-5 text-fg" />
                     </div>
                     <div className="text-left">
-                      <p className="text-white text-sm font-medium">Voice</p>
-                      <p className="text-[#80848E] text-xs">Hang out together with voice, video, and screen share.</p>
+                      <p className="text-fg text-sm font-medium">Voice</p>
+                      <p className="text-fg-3 text-xs">Hang out together with voice, video, and screen share.</p>
                     </div>
                     <div className={`ml-auto w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center ${
-                      newChannelType === 'voice' ? 'border-accent-500' : 'border-[#80848E]'
+                      newChannelType === 'voice' ? 'border-accent-500' : 'border-fg-4'
                     }`}>
                       {newChannelType === 'voice' && <div className="w-2.5 h-2.5 rounded-full bg-accent-500" />}
                     </div>
@@ -759,18 +775,18 @@ const handleSelectChannel = (channel: Channel) => {
 
               {/* Channel Name */}
               <div className="mb-2">
-                <label className="block text-xs font-bold text-[#B5BAC1] uppercase tracking-wider mb-2">Channel Name</label>
+                <label className="block text-xs font-bold text-fg-2 uppercase tracking-wider mb-2">Channel Name</label>
                 <div className="flex items-center bg-layer-0 border border-layer-5 rounded px-3 py-2 gap-2 focus-within:border-accent-500">
                   {newChannelType === 'text' ? (
-                    <Hash className="w-4 h-4 text-[#80848E] shrink-0" />
+                    <Hash className="w-4 h-4 text-fg-3 shrink-0" />
                   ) : (
-                    <Volume2 className="w-4 h-4 text-[#80848E] shrink-0" />
+                    <Volume2 className="w-4 h-4 text-fg-3 shrink-0" />
                   )}
                   <input
                     type="text"
                     value={newChannelName}
                     onChange={(e) => setNewChannelName(e.target.value)}
-                    className="flex-1 bg-transparent text-[#B5BAC1] text-sm outline-none placeholder-[#5C5F66]"
+                    className="flex-1 bg-transparent text-fg-2 text-sm outline-none placeholder-fg-4"
                     placeholder="new-channel"
                     autoFocus
                     onKeyDown={(e) => e.key === 'Enter' && handleCreateChannel()}
@@ -780,13 +796,13 @@ const handleSelectChannel = (channel: Channel) => {
             </div>
 
             <div className="bg-layer-0 px-6 py-4 flex gap-3 justify-end">
-              <button onClick={() => setShowCreateChannel(false)} className="text-sm text-[#B5BAC1] hover:text-white hover:underline cursor-pointer px-4 py-2 transition-colors">
+              <button onClick={() => setShowCreateChannel(false)} className="text-sm text-fg-2 hover:text-fg hover:underline cursor-pointer px-4 py-2 transition-colors">
                 Cancel
               </button>
               <button
                 onClick={handleCreateChannel}
                 disabled={!newChannelName.trim()}
-                className="bg-accent-500 hover:bg-accent-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-6 py-2 rounded cursor-pointer transition-colors"
+                className="bg-accent-500 hover:bg-accent-400 disabled:opacity-50 disabled:cursor-not-allowed text-on-primary text-sm font-medium px-6 py-2 rounded cursor-pointer transition-colors"
               >
                 Create Channel
               </button>
@@ -799,7 +815,7 @@ const handleSelectChannel = (channel: Channel) => {
       {contextMenu && (
         <div
           ref={contextMenuRef}
-          className="fixed z-60 bg-layer-1 rounded-lg shadow-xl py-1.5 min-w-[180px] border border-layer-5"
+          className="fixed z-60 bg-surface rounded-[2px] py-1.5 min-w-[180px] border border-line-strong"
           style={{
             top: Math.min(contextMenu.y, window.innerHeight - 200),
             left: Math.min(contextMenu.x, window.innerWidth - 200),
@@ -815,7 +831,7 @@ const handleSelectChannel = (channel: Channel) => {
                   setEditTopic(ch.topic || '');
                   setContextMenu(null);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-[#B5BAC1] hover:bg-accent-500 hover:text-white cursor-pointer transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-fg-2 hover:bg-surface-2 hover:text-fg cursor-pointer transition-colors"
               >
                 <Edit2 className="w-4 h-4" />
                 Edit Channel
@@ -825,7 +841,7 @@ const handleSelectChannel = (channel: Channel) => {
                   openCreateChannel((contextMenu.target as Channel).categoryId ?? undefined);
                   setContextMenu(null);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-[#B5BAC1] hover:bg-accent-500 hover:text-white cursor-pointer transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-fg-2 hover:bg-surface-2 hover:text-fg cursor-pointer transition-colors"
               >
                 <UserPlus className="w-4 h-4" />
                 Create Channel
@@ -853,7 +869,7 @@ const handleSelectChannel = (channel: Channel) => {
                   setEditName(cat.name);
                   setContextMenu(null);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-[#B5BAC1] hover:bg-accent-500 hover:text-white cursor-pointer transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-fg-2 hover:bg-surface-2 hover:text-fg cursor-pointer transition-colors"
               >
                 <Edit2 className="w-4 h-4" />
                 Edit Category
@@ -863,7 +879,7 @@ const handleSelectChannel = (channel: Channel) => {
                   openCreateChannel((contextMenu.target as any)._id);
                   setContextMenu(null);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-[#B5BAC1] hover:bg-accent-500 hover:text-white cursor-pointer transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-fg-2 hover:bg-surface-2 hover:text-fg cursor-pointer transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Create Channel
@@ -888,19 +904,19 @@ const handleSelectChannel = (channel: Channel) => {
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setDeleteConfirm(null)}>
-          <div className="bg-layer-1 rounded-xl w-full max-w-sm mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface border border-line-strong rounded-[2px] w-full max-w-sm mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
-              <h3 className="text-white font-bold text-lg mb-2">
+              <h3 className="text-fg font-bold text-lg mb-2">
                 Delete {deleteConfirm.type === 'channel' ? 'Channel' : 'Category'}
               </h3>
-              <p className="text-[#B5BAC1] text-sm">
+              <p className="text-fg-2 text-sm">
                 Are you sure you want to delete{' '}
-                <strong className="text-white">
+                <strong className="text-fg">
                   {deleteConfirm.type === 'channel' ? `#${deleteConfirm.name}` : deleteConfirm.name}
                 </strong>
                 ? This cannot be undone.
                 {deleteConfirm.type === 'category' && (
-                  <span className="block mt-1 text-[#80848E] text-xs">
+                  <span className="block mt-1 text-fg-3 text-xs">
                     All channels in this category will become uncategorized.
                   </span>
                 )}
@@ -909,7 +925,7 @@ const handleSelectChannel = (channel: Channel) => {
             <div className="bg-layer-0 px-6 py-4 flex gap-3 justify-end">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="text-sm text-[#B5BAC1] hover:text-white hover:underline cursor-pointer px-4 py-2 transition-colors"
+                className="text-sm text-fg-2 hover:text-fg hover:underline cursor-pointer px-4 py-2 transition-colors"
               >
                 Cancel
               </button>
@@ -927,24 +943,24 @@ const handleSelectChannel = (channel: Channel) => {
       {/* Edit Channel/Category Modal */}
       {editTarget && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setEditTarget(null)}>
-          <div className="bg-layer-1 rounded-xl w-full max-w-sm mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface border border-line-strong rounded-[2px] w-full max-w-sm mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-bold text-lg">
+                <h3 className="text-fg font-bold text-lg">
                   Edit {editTarget.type === 'channel' ? 'Channel' : 'Category'}
                 </h3>
-                <button onClick={() => setEditTarget(null)} className="text-[#80848E] hover:text-white cursor-pointer p-1 rounded hover:bg-layer-4 transition-colors">
+                <button onClick={() => setEditTarget(null)} className="text-fg-3 hover:text-fg cursor-pointer p-1 rounded hover:bg-layer-4 transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <label className="block text-xs font-bold text-[#B5BAC1] uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-fg-2 uppercase tracking-wider mb-2">
                 {editTarget.type === 'channel' ? 'Channel' : 'Category'} Name
               </label>
               <input
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="w-full bg-layer-0 text-[#B5BAC1] text-sm px-3 py-2 rounded border border-layer-5 focus:outline-none focus:border-accent-500 mb-4"
+                className="w-full bg-layer-0 text-fg-2 text-sm px-3 py-2 rounded border border-layer-5 focus:outline-none focus:border-accent-500 mb-4"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -956,7 +972,7 @@ const handleSelectChannel = (channel: Channel) => {
               />
               {editTarget.type === 'channel' && (
                 <>
-                  <label className="block text-xs font-bold text-[#B5BAC1] uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-fg-2 uppercase tracking-wider mb-2">
                     Channel Topic
                   </label>
                   <textarea
@@ -965,7 +981,7 @@ const handleSelectChannel = (channel: Channel) => {
                     placeholder="What is this channel about?"
                     rows={3}
                     maxLength={1024}
-                    className="w-full bg-layer-0 text-[#B5BAC1] text-sm px-3 py-2 rounded border border-layer-5 focus:outline-none focus:border-accent-500 resize-none"
+                    className="w-full bg-layer-0 text-fg-2 text-sm px-3 py-2 rounded border border-layer-5 focus:outline-none focus:border-accent-500 resize-none"
                   />
                 </>
               )}
@@ -973,7 +989,7 @@ const handleSelectChannel = (channel: Channel) => {
             <div className="bg-layer-0 px-6 py-4 flex gap-3 justify-end">
               <button
                 onClick={() => setEditTarget(null)}
-                className="text-sm text-[#B5BAC1] hover:text-white hover:underline cursor-pointer px-4 py-2 transition-colors"
+                className="text-sm text-fg-2 hover:text-fg hover:underline cursor-pointer px-4 py-2 transition-colors"
               >
                 Cancel
               </button>
@@ -988,7 +1004,7 @@ const handleSelectChannel = (channel: Channel) => {
                     : !editName.trim() ||
                       (editName.trim() === editTarget.name && editTopic.trim() === (editTarget.topic || ''))
                 }
-                className="bg-accent-500 hover:bg-accent-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-6 py-2 rounded cursor-pointer transition-colors"
+                className="bg-accent-500 hover:bg-accent-400 disabled:opacity-50 disabled:cursor-not-allowed text-on-primary text-sm font-medium px-6 py-2 rounded cursor-pointer transition-colors"
               >
                 Save
               </button>
@@ -1000,21 +1016,21 @@ const handleSelectChannel = (channel: Channel) => {
       {/* Delete Server Confirmation Modal */}
       {deleteServerConfirm && currentServer && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => { setDeleteServerConfirm(false); setDeleteServerName(''); }}>
-          <div className="bg-layer-1 rounded-xl w-full max-w-md mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface border border-line-strong rounded-[2px] w-full max-w-md mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
-              <h3 className="text-white font-bold text-xl mb-2">Delete '{currentServer.name}'</h3>
-              <div className="bg-warning-500/10 border border-warning-500/30 rounded-lg p-3 mb-4">
+              <h3 className="text-fg font-bold text-xl mb-2">Delete '{currentServer.name}'</h3>
+              <div className="bg-warning-500/10 border border-warning-500/30 rounded-[2px] p-3 mb-4">
                 <p className="text-warning-400 text-sm font-medium mb-1">Are you sure you want to delete this server?</p>
-                <p className="text-[#80848E] text-xs">This action cannot be undone. This will permanently delete the server, all channels, messages, and remove all members.</p>
+                <p className="text-fg-3 text-xs">This action cannot be undone. This will permanently delete the server, all channels, messages, and remove all members.</p>
               </div>
-              <label className="block text-xs font-bold text-[#B5BAC1] uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-fg-2 uppercase tracking-wider mb-2">
                 Enter server name to confirm
               </label>
               <input
                 type="text"
                 value={deleteServerName}
                 onChange={(e) => setDeleteServerName(e.target.value)}
-                className="w-full bg-layer-0 text-[#B5BAC1] text-sm px-3 py-2 rounded border border-layer-5 focus:outline-none focus:border-danger-500"
+                className="w-full bg-layer-0 text-fg-2 text-sm px-3 py-2 rounded border border-layer-5 focus:outline-none focus:border-danger-500"
                 placeholder={currentServer.name}
                 autoFocus
                 onKeyDown={(e) => {
@@ -1026,7 +1042,7 @@ const handleSelectChannel = (channel: Channel) => {
             <div className="bg-layer-0 px-6 py-4 flex gap-3 justify-end">
               <button
                 onClick={() => { setDeleteServerConfirm(false); setDeleteServerName(''); }}
-                className="text-sm text-[#B5BAC1] hover:text-white hover:underline cursor-pointer px-4 py-2 transition-colors"
+                className="text-sm text-fg-2 hover:text-fg hover:underline cursor-pointer px-4 py-2 transition-colors"
               >
                 Cancel
               </button>

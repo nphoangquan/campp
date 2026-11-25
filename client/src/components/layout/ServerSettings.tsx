@@ -220,8 +220,8 @@ export default function ServerSettings({ onClose }: Props) {
       <div className="w-56 bg-layer-1 flex flex-col shrink-0">
         <div className="flex-1 overflow-y-auto pt-6 pb-4 px-2">
           <div className="px-3 mb-6">
-            <h2 className="text-white font-bold text-base truncate">{currentServer.name}</h2>
-            <p className="text-[#80848E] text-xs mt-0.5">Server Settings</p>
+            <h2 className="text-fg font-bold text-base truncate">{currentServer.name}</h2>
+            <p className="text-fg-3 text-xs mt-0.5">Server Settings</p>
           </div>
 
           <NavSection title="">
@@ -238,7 +238,7 @@ export default function ServerSettings({ onClose }: Props) {
 
         <div className="px-2 pb-4">
           <div className="h-px bg-layer-4 mx-2 mb-3" />
-          <button onClick={onClose} className="w-full flex items-center gap-2 px-3 py-2 rounded text-[#80848E] hover:text-[#B5BAC1] hover:bg-layer-3 transition-colors cursor-pointer text-sm">
+          <button onClick={onClose} className="w-full flex items-center gap-2 px-3 py-2 rounded text-fg-3 hover:text-fg-2 hover:bg-layer-3 transition-colors cursor-pointer text-sm">
             <ChevronLeft className="w-4 h-4" /> Back
           </button>
         </div>
@@ -249,7 +249,7 @@ export default function ServerSettings({ onClose }: Props) {
         {/* Close button (top right) */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-9 h-9 rounded-full border-2 border-[#80848E] flex items-center justify-center text-[#80848E] hover:border-white hover:text-white transition-colors cursor-pointer z-10"
+          className="absolute top-4 right-4 w-9 h-9 rounded-full border-2 border-fg-4 flex items-center justify-center text-fg-3 hover:border-white hover:text-fg transition-colors cursor-pointer z-10"
         >
           <X className="w-4 h-4" />
         </button>
@@ -391,14 +391,14 @@ function OverviewPage({ currentServer }: { currentServer: { _id: string; name: s
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-2xl px-8 py-6">
-        <h2 className="text-white font-bold text-xl mb-1">Overview</h2>
-        <p className="text-[#B5BAC1] text-sm mb-6">
+        <h2 className="text-fg font-bold text-xl mb-1">Overview</h2>
+        <p className="text-fg-2 text-sm mb-6">
           Customize how your server appears in invite links and in the channel sidebar.
         </p>
 
         <div className="space-y-6">
           <div>
-            <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-2">Server Name</label>
+            <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-2">Server Name</label>
             <input
               type="text"
               value={name}
@@ -409,8 +409,8 @@ function OverviewPage({ currentServer }: { currentServer: { _id: string; name: s
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-2">Server Description</label>
-            <p className="text-[#80848E] text-xs mb-2">A short description of your server. Shown on the invite page.</p>
+            <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-2">Server Description</label>
+            <p className="text-fg-3 text-xs mb-2">A short description of your server. Shown on the invite page.</p>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value.slice(0, 500))}
@@ -418,12 +418,12 @@ function OverviewPage({ currentServer }: { currentServer: { _id: string; name: s
               placeholder="What's your server about?"
               maxLength={500}
             />
-            <p className="text-[#80848E] text-xs mt-1">{description.length}/500</p>
+            <p className="text-fg-3 text-xs mt-1">{description.length}/500</p>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-2">Icon</label>
-            <p className="text-[#80848E] text-xs mb-2">We recommend an image of at least 512x512</p>
+            <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-2">Icon</label>
+            <p className="text-fg-3 text-xs mb-2">We recommend an image of at least 512x512</p>
             <div className="flex items-center gap-4">
               <div className="w-20 h-20 rounded-full bg-layer-4 flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-layer-5">
                 {icon ? (
@@ -454,8 +454,8 @@ function OverviewPage({ currentServer }: { currentServer: { _id: string; name: s
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-2">Banner</label>
-            <p className="text-[#80848E] text-xs mb-2">Shown in the channel sidebar and on invite links. Choose a color or upload an image.</p>
+            <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-2">Banner</label>
+            <p className="text-fg-3 text-xs mb-2">Shown in the channel sidebar and on invite links. Choose a color or upload an image.</p>
             <div className="flex flex-wrap gap-2 mb-3">
               {BANNER_COLORS.map((c) => (
                 <button
@@ -549,21 +549,21 @@ function InvitesPage({ currentServer }: { currentServer: { _id: string; name: st
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-2xl px-8 py-6">
-        <h2 className="text-white font-bold text-xl mb-1">Invite People</h2>
-        <p className="text-[#B5BAC1] text-sm mb-6">
+        <h2 className="text-fg font-bold text-xl mb-1">Invite People</h2>
+        <p className="text-fg-2 text-sm mb-6">
           Share invite links to let people join your server. Anyone with the link can join.
         </p>
 
         <div className="space-y-6">
           <div>
-            <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-2">Invite Link</label>
+            <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-2">Invite Link</label>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleCopy}
                 className="flex-1 flex items-center justify-between gap-3 px-4 py-3 bg-layer-3 rounded-lg border border-layer-5 hover:bg-layer-4 transition-colors cursor-pointer text-left"
               >
-                <span className="text-[#B5BAC1] text-sm truncate">{inviteUrl}</span>
-                <Copy className="w-4 h-4 text-[#80848E] shrink-0" />
+                <span className="text-fg-2 text-sm truncate">{inviteUrl}</span>
+                <Copy className="w-4 h-4 text-fg-3 shrink-0" />
               </button>
               <button
                 onClick={handleCopy}
@@ -575,8 +575,8 @@ function InvitesPage({ currentServer }: { currentServer: { _id: string; name: st
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-2">Create New Link</label>
-            <p className="text-[#80848E] text-sm mb-3">
+            <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-2">Create New Link</label>
+            <p className="text-fg-3 text-sm mb-3">
               Generate a new invite link. The previous link will stop working.
             </p>
             <button
@@ -609,7 +609,7 @@ function NavSection({ title, children }: { title: string; children: React.ReactN
   return (
     <div className="mb-2">
       {title && (
-        <p className="text-[#80848E] text-2xs font-bold uppercase tracking-wider px-3 mb-1">{title}</p>
+        <p className="text-fg-3 text-2xs font-bold uppercase tracking-wider px-3 mb-1">{title}</p>
       )}
       {children}
     </div>
@@ -620,7 +620,7 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode; labe
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded text-sm cursor-pointer transition-colors ${active ? 'bg-layer-4 text-white' : 'text-[#80848E] hover:text-[#B5BAC1] hover:bg-layer-3'
+      className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded text-sm cursor-pointer transition-colors ${active ? 'bg-layer-4 text-fg' : 'text-fg-3 hover:text-fg-2 hover:bg-layer-3'
         }`}
     >
       {icon}
@@ -693,10 +693,10 @@ function RolesPage({
       {showCreateRoleModal && (
         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60" onClick={() => !creating && setShowCreateRoleModal(false)}>
           <div className="bg-layer-2 rounded-lg shadow-xl border border-layer-4 w-full max-w-md mx-4 p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-white font-bold text-lg mb-4">Create Role</h3>
+            <h3 className="text-fg font-bold text-lg mb-4">Create Role</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wider mb-2">Role name</label>
+                <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wider mb-2">Role name</label>
                 <input
                   type="text"
                   value={newRoleName}
@@ -707,7 +707,7 @@ function RolesPage({
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wider mb-2">Color</label>
+                <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wider mb-2">Color</label>
                 <div className="flex flex-wrap gap-1.5">
                   {PRESET_COLORS.map((c) => (
                     <button
@@ -735,10 +735,10 @@ function RolesPage({
       {/* Role list panel */}
       <div className="w-52 border-r border-layer-4 flex flex-col shrink-0">
         <div className="p-3 flex items-center justify-between border-b border-layer-4">
-          <span className="text-[#80848E] text-xs font-bold uppercase tracking-wider">Roles — {roles.length}</span>
+          <span className="text-fg-3 text-xs font-bold uppercase tracking-wider">Roles — {roles.length}</span>
           {canCreateRole && (
             <button onClick={openCreateModal} className="w-6 h-6 rounded bg-accent-500 hover:bg-accent-400 flex items-center justify-center cursor-pointer transition-colors" title="Create Role">
-              <Plus className="w-3.5 h-3.5 text-white" />
+              <Plus className="w-3.5 h-3.5 text-fg" />
             </button>
           )}
         </div>
@@ -760,10 +760,10 @@ function RolesPage({
                   }`}
               >
                 <div className="w-3 h-3 rounded-full shrink-0 ring-2 ring-transparent" style={{ backgroundColor: role.color }} />
-                <span className={`text-sm truncate flex-1 min-w-0 ${selectedRole?._id === role._id ? 'text-white font-medium' : 'text-[#B5BAC1]'}`}>
+                <span className={`text-sm truncate flex-1 min-w-0 ${selectedRole?._id === role._id ? 'text-fg font-medium' : 'text-fg-2'}`}>
                   {role.name}
                 </span>
-                <span className="text-[#5C5F66] text-2xs shrink-0">{memberCount}</span>
+                <span className="text-fg-4 text-2xs shrink-0">{memberCount}</span>
               </button>
             );
           })}
@@ -776,7 +776,7 @@ function RolesPage({
           {/* Header with role name + tabs */}
           <div className="px-8 pt-6 pb-0">
             <div className="flex items-center gap-3 mb-1">
-              <h2 className="text-white font-bold text-lg">Edit Role</h2>
+              <h2 className="text-fg font-bold text-lg">Edit Role</h2>
               <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: selectedRole.color + '22', color: selectedRole.color }}>
                 {selectedRole.name}
               </span>
@@ -796,8 +796,8 @@ function RolesPage({
                   key={t.key}
                   onClick={() => setRoleTab(t.key)}
                   className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium cursor-pointer transition-colors relative ${roleTab === t.key
-                    ? 'text-white'
-                    : 'text-[#80848E] hover:text-[#B5BAC1]'
+                    ? 'text-fg'
+                    : 'text-fg-3 hover:text-fg-2'
                     }`}
                 >
                   {t.icon}
@@ -846,9 +846,9 @@ function RolesPage({
           {/* Save bar */}
           {hasChanges && (
             <div className="px-8 py-3 bg-layer-0 border-t border-layer-4 flex items-center justify-between animate-in slide-in-from-bottom-2">
-              <span className="text-[#B5BAC1] text-sm">Careful — you have unsaved changes!</span>
+              <span className="text-fg-2 text-sm">Careful — you have unsaved changes!</span>
               <div className="flex gap-2">
-                <button onClick={onReset} className="text-sm text-[#B5BAC1] hover:text-white hover:underline cursor-pointer px-3 py-1.5 transition-colors">Reset</button>
+                <button onClick={onReset} className="text-sm text-fg-2 hover:text-fg hover:underline cursor-pointer px-3 py-1.5 transition-colors">Reset</button>
                 <button onClick={onSave} className="bg-online hover:brightness-110 text-white text-sm font-medium px-4 py-1.5 rounded cursor-pointer transition-all">Save Changes</button>
               </div>
             </div>
@@ -866,7 +866,7 @@ function RolesPage({
           )}
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center text-[#80848E]">
+        <div className="flex-1 flex items-center justify-center text-fg-3">
           Select a role to edit
         </div>
       )}
@@ -892,7 +892,7 @@ function DisplayTab({
     <div className="space-y-6 max-w-lg">
       {/* Role name */}
       <div>
-        <label className="block text-xs font-bold text-[#B5BAC1] uppercase tracking-wider mb-2">
+        <label className="block text-xs font-bold text-fg-2 uppercase tracking-wider mb-2">
           Role Name {!isDefault && <span className="text-danger-400">*</span>}
         </label>
         <input
@@ -907,11 +907,11 @@ function DisplayTab({
 
       {/* Role color */}
       <div>
-        <label className="block text-xs font-bold text-[#B5BAC1] uppercase tracking-wider mb-2">
+        <label className="block text-xs font-bold text-fg-2 uppercase tracking-wider mb-2">
           Role Color
         </label>
-        <p className="text-[#80848E] text-xs mb-3">
-          Members use the color of the highest role they have on the roles list.
+        <p className="text-fg-3 text-xs mb-3">
+          Marks this role in the roles list and on role badges. Member names keep each person's own colour.
         </p>
 
         {/* Color swatches */}
@@ -932,12 +932,12 @@ function DisplayTab({
               setShowCustomColor(true);
               setTimeout(() => colorInputRef.current?.click(), 50);
             }}
-            className={`w-8 h-8 rounded-md cursor-pointer border-2 border-dashed transition-all hover:scale-110 flex items-center justify-center ${showCustomColor ? 'border-white ring-2 ring-white/30 scale-110' : 'border-[#80848E] hover:border-[#B5BAC1]'
+            className={`w-8 h-8 rounded-md cursor-pointer border-2 border-dashed transition-all hover:scale-110 flex items-center justify-center ${showCustomColor ? 'border-white ring-2 ring-white/30 scale-110' : 'border-fg-4 hover:border-fg-3'
               }`}
             style={showCustomColor ? { backgroundColor: editColor } : undefined}
             title="Custom color"
           >
-            {!showCustomColor && <Paintbrush className="w-3.5 h-3.5 text-[#80848E]" />}
+            {!showCustomColor && <Paintbrush className="w-3.5 h-3.5 text-fg-3" />}
           </button>
         </div>
 
@@ -952,7 +952,7 @@ function DisplayTab({
               className="w-10 h-10 rounded cursor-pointer border-0 bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-md [&::-webkit-color-swatch]:border-2 [&::-webkit-color-swatch]:border-layer-5"
             />
             <div className="flex items-center bg-layer-0 border border-layer-5 rounded px-3 py-1.5 gap-1">
-              <span className="text-[#80848E] text-sm">#</span>
+              <span className="text-fg-3 text-sm">#</span>
               <input
                 type="text"
                 value={editColor.replace('#', '')}
@@ -960,7 +960,7 @@ function DisplayTab({
                   const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
                   if (v.length <= 6) setEditColor('#' + v);
                 }}
-                className="bg-transparent text-[#B5BAC1] text-sm w-20 outline-none font-mono"
+                className="bg-transparent text-fg-2 text-sm w-20 outline-none font-mono"
                 maxLength={6}
               />
             </div>
@@ -968,16 +968,12 @@ function DisplayTab({
         )}
 
         {/* Preview */}
-        <div className="mt-4 bg-layer-0 rounded-lg p-3">
-          <p className="text-[#80848E] text-2xs uppercase tracking-wider font-bold mb-2">Preview</p>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-accent-600 flex items-center justify-center text-white text-xs font-bold">C</div>
-            <div>
-              <span className="text-sm font-medium" style={{ color: editColor }}>{editName || 'Role'}</span>
-              <span className="text-[#80848E] text-xs ml-1.5">Today at 12:00 PM</span>
-            </div>
-          </div>
-          <p className="text-[#B5BAC1] text-sm mt-1 ml-10">This is a preview message.</p>
+        <div className="mt-4 bg-surface border border-line-strong rounded-[2px] p-3">
+          <p className="text-fg-3 text-2xs uppercase tracking-wider font-bold mb-2">Preview</p>
+          <span className="inline-flex items-center gap-1.5 h-6 px-2 rounded-[2px] border border-line-strong text-[13px] font-medium text-fg">
+            <span aria-hidden="true" className="block w-2.5 h-2.5 rounded-full" style={{ backgroundColor: editColor }} />
+            {editName || 'Role'}
+          </span>
         </div>
       </div>
     </div>
@@ -1009,8 +1005,8 @@ function PermissionsTab({ editPerms, togglePerm, isOwner }: { editPerms: number;
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1 mr-4">
-                  <p className="text-[#B5BAC1] text-sm font-medium">{PERMISSION_LABELS[value]}</p>
-                  <p className="text-[#80848E] text-xs mt-0.5">{PERMISSION_DESCRIPTIONS[value]}</p>
+                  <p className="text-fg-2 text-sm font-medium">{PERMISSION_LABELS[value]}</p>
+                  <p className="text-fg-3 text-xs mt-0.5">{PERMISSION_DESCRIPTIONS[value]}</p>
                   {isDisabledForMod && (
                     <p className="text-warning-400 text-xs mt-0.5 italic">Only the server owner can toggle this permission.</p>
                   )}
@@ -1149,7 +1145,7 @@ function MembersTab({
   return (
     <div className="max-w-lg">
       <div className="flex items-center justify-between gap-2 mb-3">
-        <p className="text-[#80848E] text-xs">
+        <p className="text-fg-3 text-xs">
           {membersWithRole.length} member{membersWithRole.length !== 1 ? 's' : ''} with this role
         </p>
         {onRefreshServer && (
@@ -1173,18 +1169,18 @@ function MembersTab({
               {m.avatar ? (
                 <img src={m.avatar} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-white text-xs font-bold">{m.displayName?.charAt(0)?.toUpperCase() ?? '?'}</span>
+                <span className="text-fg text-xs font-bold">{m.displayName?.charAt(0)?.toUpperCase() ?? '?'}</span>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <span className="text-[#B5BAC1] text-sm block truncate">{m.displayName || m.username}</span>
-              {m.username && <span className="text-[#5C5F66] text-2xs">@{m.username}</span>}
+              <span className="text-fg-2 text-sm block truncate">{m.displayName || m.username}</span>
+              {m.username && <span className="text-fg-4 text-2xs">@{m.username}</span>}
             </div>
             {onRefreshServer && ((role.isSystemRole && role.type !== 'member') || !role.isSystemRole) && (
               <button
                 onClick={() => handleRemove(m._id)}
                 disabled={removing === m._id}
-                className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded flex items-center justify-center text-[#80848E] hover:text-danger-400 hover:bg-danger-500/10 transition-all cursor-pointer"
+                className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded flex items-center justify-center text-fg-3 hover:text-danger-400 hover:bg-danger-500/10 transition-all cursor-pointer"
                 title={role.isSystemRole ? 'Remove from role (set to Member)' : 'Remove this role from member'}
               >
                 {removing === m._id ? (
@@ -1197,7 +1193,7 @@ function MembersTab({
           </div>
         ))}
         {membersWithRole.length === 0 && (
-          <p className="text-[#5C5F66] text-sm text-center py-8">No members with this role</p>
+          <p className="text-fg-4 text-sm text-center py-8">No members with this role</p>
         )}
       </div>
 
@@ -1212,17 +1208,17 @@ function MembersTab({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-layer-4 shrink-0">
-              <h3 className="text-white font-semibold">Add Members to {role.name}</h3>
+              <h3 className="text-fg font-semibold">Add Members to {role.name}</h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-[#80848E] hover:text-white cursor-pointer p-1 rounded"
+                className="text-fg-3 hover:text-fg cursor-pointer p-1 rounded"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-3 border-b border-layer-4 shrink-0">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#80848E]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-3" />
                 <input
                   type="text"
                   value={searchQuery}
@@ -1234,12 +1230,12 @@ function MembersTab({
             </div>
             <div className="flex-1 overflow-y-auto p-2 min-h-0">
               {searchingToAdd ? (
-                <p className="text-[#80848E] text-sm text-center py-8 flex items-center justify-center gap-2">
+                <p className="text-fg-3 text-sm text-center py-8 flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-layer-5 border-t-[#80848E] rounded-full animate-spin" />
                   Searching...
                 </p>
               ) : filteredToAdd.length === 0 ? (
-                <p className="text-[#5C5F66] text-sm text-center py-8">
+                <p className="text-fg-4 text-sm text-center py-8">
                   {searchQuery ? 'No members found' : 'All members already have this role'}
                 </p>
               ) : (
@@ -1254,12 +1250,12 @@ function MembersTab({
                           {m.avatar ? (
                             <img src={m.avatar} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <span className="text-white text-xs font-bold">{m.displayName?.charAt(0)?.toUpperCase() ?? '?'}</span>
+                            <span className="text-fg text-xs font-bold">{m.displayName?.charAt(0)?.toUpperCase() ?? '?'}</span>
                           )}
                         </div>
                         <div className="min-w-0">
-                          <span className="text-[#B5BAC1] text-sm block truncate">{m.displayName || m.username}</span>
-                          {m.username && <span className="text-[#5C5F66] text-2xs">@{m.username}</span>}
+                          <span className="text-fg-2 text-sm block truncate">{m.displayName || m.username}</span>
+                          {m.username && <span className="text-fg-4 text-2xs">@{m.username}</span>}
                         </div>
                       </div>
                       <button
@@ -1279,7 +1275,7 @@ function MembersTab({
                     </div>
                   ))}
                   {hasMoreToAdd && (
-                    <p className="text-[#80848E] text-xs text-center py-3">
+                    <p className="text-fg-3 text-xs text-center py-3">
                       +{filteredToAdd.length - DISPLAY_LIMIT} more — refine search to find
                     </p>
                   )}
@@ -1299,17 +1295,17 @@ function BansPage({ bans, onUnban }: { bans: BanEntry[]; onUnban: (id: string) =
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-2xl mx-auto px-8 py-8">
         <div className="flex items-center gap-3 mb-6">
-          <Gavel className="w-6 h-6 text-[#80848E]" />
+          <Gavel className="w-6 h-6 text-fg-3" />
           <div>
-            <h2 className="text-white font-bold text-lg">Server Bans</h2>
-            <p className="text-[#80848E] text-xs">{bans.length} banned user{bans.length !== 1 ? 's' : ''}</p>
+            <h2 className="text-fg font-bold text-lg">Server Bans</h2>
+            <p className="text-fg-3 text-xs">{bans.length} banned user{bans.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
 
         {bans.length === 0 ? (
           <div className="text-center py-16">
-            <Gavel className="w-12 h-12 text-[#5C5F66] mx-auto mb-3" />
-            <p className="text-[#80848E] text-sm">No bans yet. Let's keep it that way!</p>
+            <Gavel className="w-12 h-12 text-fg-4 mx-auto mb-3" />
+            <p className="text-fg-3 text-sm">No bans yet. Let's keep it that way!</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -1320,14 +1316,14 @@ function BansPage({ bans, onUnban }: { bans: BanEntry[]; onUnban: (id: string) =
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-white font-medium text-sm">{ban.userId.displayName}</span>
-                    <span className="text-[#5C5F66] text-xs">@{ban.userId.username}</span>
+                    <span className="text-fg font-medium text-sm">{ban.userId.displayName}</span>
+                    <span className="text-fg-4 text-xs">@{ban.userId.username}</span>
                   </div>
-                  {ban.reason && <p className="text-[#80848E] text-xs mt-0.5 truncate">Reason: {ban.reason}</p>}
+                  {ban.reason && <p className="text-fg-3 text-xs mt-0.5 truncate">Reason: {ban.reason}</p>}
                 </div>
                 <button
                   onClick={() => onUnban(ban.userId._id)}
-                  className="opacity-0 group-hover:opacity-100 bg-layer-4 hover:bg-layer-5 text-[#B5BAC1] text-xs font-medium px-3 py-1.5 rounded cursor-pointer transition-all"
+                  className="opacity-0 group-hover:opacity-100 bg-layer-4 hover:bg-layer-5 text-fg-2 text-xs font-medium px-3 py-1.5 rounded cursor-pointer transition-all"
                 >
                   Revoke Ban
                 </button>
@@ -1353,17 +1349,17 @@ function AuditLogPage({
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-2xl mx-auto px-8 py-8">
         <div className="flex items-center gap-3 mb-6">
-          <ScrollText className="w-6 h-6 text-[#80848E]" />
+          <ScrollText className="w-6 h-6 text-fg-3" />
           <div>
-            <h2 className="text-white font-bold text-lg">Audit Log</h2>
-            <p className="text-[#80848E] text-xs">A record of all moderation actions</p>
+            <h2 className="text-fg font-bold text-lg">Audit Log</h2>
+            <p className="text-fg-3 text-xs">A record of all moderation actions</p>
           </div>
         </div>
 
         {logs.length === 0 ? (
           <div className="text-center py-16">
-            <ScrollText className="w-12 h-12 text-[#5C5F66] mx-auto mb-3" />
-            <p className="text-[#80848E] text-sm">No audit logs yet</p>
+            <ScrollText className="w-12 h-12 text-fg-4 mx-auto mb-3" />
+            <p className="text-fg-3 text-sm">No audit logs yet</p>
           </div>
         ) : (
           <div className="space-y-1">
@@ -1373,16 +1369,16 @@ function AuditLogPage({
                   <span className="text-lg mt-0.5">{actionIcons[log.action] || '📋'}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">
-                      <span className="text-white font-medium">{log.moderatorId.displayName}</span>
-                      <span className="text-[#80848E]"> {actionLabels[log.action] || log.action} </span>
-                      <span className="text-white font-medium">{log.targetId.displayName}</span>
+                      <span className="text-fg font-medium">{log.moderatorId.displayName}</span>
+                      <span className="text-fg-3"> {actionLabels[log.action] || log.action} </span>
+                      <span className="text-fg font-medium">{log.targetId.displayName}</span>
                     </p>
                     {log.reason && (
-                      <p className="text-[#80848E] text-xs mt-1 bg-layer-0 inline-block px-2 py-0.5 rounded">
+                      <p className="text-fg-3 text-xs mt-1 bg-layer-0 inline-block px-2 py-0.5 rounded">
                         {log.reason}
                       </p>
                     )}
-                    <p className="text-[#5C5F66] text-xs mt-1">{formatDate(log.createdAt)}</p>
+                    <p className="text-fg-4 text-xs mt-1">{formatDate(log.createdAt)}</p>
                   </div>
                 </div>
               </div>

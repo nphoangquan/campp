@@ -18,7 +18,7 @@ export default function InboxButton() {
       <button
         ref={buttonRef}
         onClick={() => setShowInbox(!showInbox)}
-        className="relative p-1.5 rounded text-[#80848E] hover:text-white hover:bg-layer-4 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:ring-offset-2 focus:ring-offset-layer-2"
+        className="relative p-1.5 rounded text-fg-3 hover:text-fg hover:bg-layer-4 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:ring-offset-2 focus:ring-offset-layer-2"
         title="Notifications"
         aria-label="Open notifications"
       >

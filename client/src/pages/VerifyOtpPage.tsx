@@ -1,163 +1,119 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { toast } from 'sonner';
+import { ArrowRight } from 'lucide-react';
 import { authApi } from '../services/api/auth.api';
-
-const OTP_LENGTH = 6;
+import RailShell from '../components/firstrun/RailShell';
+import {
+  CodeInput,
+  ErrorLine,
+  OTP_LENGTH,
+  PlateHeading,
+  PrimaryButton,
+  apiError,
+  useCooldown,
+} from '../components/firstrun/parts';
+import { backToSignIn, resetSteps } from '../components/firstrun/resetFlow';
 
 export default function VerifyOtpPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const email = (location.state as { email?: string })?.email ?? '';
+  const email = (location.state as { email?: string } | null)?.email ?? '';
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''));
+  const [error, setError] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
+  const cooldown = useCooldown(60);
   const code = digits.join('');
-
-  const focusInput = (index: number) => {
-    inputRefs.current[index]?.focus();
-  };
-
-  const handleChange = (index: number, value: string) => {
-    if (value.length > 1) {
-      const chars = value.replace(/\D/g, '').slice(0, OTP_LENGTH).split('');
-      const next = [...digits];
-      chars.forEach((c, i) => {
-        if (index + i < OTP_LENGTH) next[index + i] = c;
-      });
-      setDigits(next);
-      focusInput(Math.min(index + chars.length, OTP_LENGTH - 1));
-      return;
-    }
-    const char = value.replace(/\D/g, '');
-    const next = [...digits];
-    next[index] = char;
-    setDigits(next);
-    if (char && index < OTP_LENGTH - 1) focusInput(index + 1);
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !digits[index] && index > 0) {
-      focusInput(index - 1);
-      const next = [...digits];
-      next[index - 1] = '';
-      setDigits(next);
-    }
-  };
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) {
-      toast.error('Missing email. Please start from forgot password.');
-      navigate('/forgot-password');
-      return;
-    }
     if (code.length !== OTP_LENGTH) {
-      toast.error('Please enter 6 digits');
+      setError('Enter all 6 digits from the email.');
       return;
     }
     setIsLoading(true);
+    setError(null);
     try {
       await authApi.verifyOtp(email, code);
-      toast.success('Code is valid');
       navigate('/forgot-password/reset', { state: { email, code } });
-    } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Code is invalid or expired';
-      toast.error(message);
+    } catch (err) {
+      setError(apiError(err, "That code didn't work. Check the latest email, or send a new code."));
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleResend = async () => {
-    if (resendCooldown > 0) return;
-    if (!email?.trim()) {
-      toast.error('Missing email. Please start from forgot password.');
-      navigate('/forgot-password');
-      return;
-    }
+    if (cooldown.left > 0) return;
+    setNote(null);
     try {
       await authApi.forgotPassword(email);
-      toast.success('Verification code resent');
-      setResendCooldown(60);
-      const interval = setInterval(() => {
-        setResendCooldown((c) => {
-          if (c <= 1) clearInterval(interval);
-          return c - 1;
-        });
-      }, 1000);
-    } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Failed to resend code';
-      toast.error(message);
+      cooldown.restart(60);
+      setDigits(Array(OTP_LENGTH).fill(''));
+      setError(null);
+      setNote(`New code sent to ${email}.`);
+    } catch (err) {
+      setError(apiError(err, "We couldn't send a new code. Try again in a minute."));
     }
   };
 
+  if (!email) {
+    return (
+      <RailShell steps={resetSteps(1)} aside={backToSignIn}>
+        <PlateHeading title="Start again" lede="This page needs the email you're resetting. Enter it first and we'll send a code." />
+        <Link to="/forgot-password" className="fr-btn no-underline">
+          <span>Enter my email</span>
+          <ArrowRight aria-hidden="true" className="w-5 h-5 shrink-0" />
+        </Link>
+      </RailShell>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-layer-1 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-accent-500 rounded-2xl mb-4">
-            <span className="text-white text-2xl font-bold">C</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white">Verification Code</h1>
-          <p className="text-[#80848E] mt-1">
-            Verification code has been sent to your email.
+    <RailShell steps={resetSteps(1)} aside={backToSignIn}>
+      <PlateHeading
+        title="Check your email"
+        lede={
+          <>
+            If <span className="font-semibold text-fg break-all">{email}</span> has an account, a 6-digit code is on its way.
+          </>
+        }
+      />
+      <form onSubmit={handleVerify}>
+        <CodeInput
+          digits={digits}
+          onChange={(d) => {
+            setDigits(d);
+            setError(null);
+          }}
+          invalid={!!error}
+          disabled={isLoading}
+          describedBy={error ? 'reset-code-error' : undefined}
+        />
+        {error && <ErrorLine id="reset-code-error">{error}</ErrorLine>}
+        {note && !error && (
+          <p role="status" className="mt-2 flex items-center gap-2 text-[15px] text-fg">
+            <span aria-hidden="true" className="block w-3 border-t-2 border-fg" />
+            {note}
           </p>
+        )}
+        <div className="mt-8">
+          <PrimaryButton type="submit" disabled={isLoading || code.length !== OTP_LENGTH} busy={isLoading} busyLabel="Checking code">
+            Verify code
+          </PrimaryButton>
         </div>
-
-        <div className="bg-layer-2 rounded-lg p-8 shadow-xl">
-          <form onSubmit={handleVerify} className="space-y-6">
-            <div>
-              <p className="text-[#B5BAC1] text-sm mb-4">
-                Not received code?{' '}
-                <button
-                  type="button"
-                  onClick={handleResend}
-                  disabled={resendCooldown > 0}
-                  className="text-accent-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {resendCooldown > 0 ? `Resend after ${resendCooldown}s` : 'Resend code'}
-                </button>
-              </p>
-              <div className="flex justify-center gap-2">
-                {digits.map((d, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => { inputRefs.current[i] = el; }}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={d}
-                    onChange={(e) => handleChange(i, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(i, e)}
-                    className="input w-12 h-12 text-center text-lg font-semibold"
-                  />
-                ))}
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading || code.length !== OTP_LENGTH}
-              className="btn-primary w-full py-2.5 text-base"
-            >
-              {isLoading ? 'Verifying...' : 'Verify'}
-            </button>
-          </form>
-
-          <div className="mt-6 flex justify-center">
-            <Link to="/login" className="btn-danger py-2 px-4 text-sm">
-              Cancel
-            </Link>
-          </div>
-        </div>
+      </form>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-[15px] text-fg-3">
+        <span>
+          No email?{' '}
+          <button type="button" className="fr-link text-fg" onClick={handleResend} disabled={cooldown.left > 0}>
+            {cooldown.left > 0 ? `Send a new code in ${cooldown.left}s` : 'Send a new code'}
+          </button>
+        </span>
+        <Link to="/forgot-password" className="fr-link text-fg">
+          Use another email
+        </Link>
       </div>
-    </div>
+    </RailShell>
   );
 }

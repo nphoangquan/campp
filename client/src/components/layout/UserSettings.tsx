@@ -15,7 +15,7 @@ function NavSection({ title, children }: { title: string; children: React.ReactN
   return (
     <div className="mb-2">
       {title && (
-        <p className="text-[#80848E] text-2xs font-bold uppercase tracking-wider px-3 mb-1">{title}</p>
+        <p className="text-fg-3 text-2xs font-bold uppercase tracking-wider px-3 mb-1">{title}</p>
       )}
       {children}
     </div>
@@ -27,7 +27,7 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode; labe
     <button
       onClick={onClick}
       className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded text-sm cursor-pointer transition-colors ${
-        active ? 'bg-layer-4 text-white' : 'text-[#80848E] hover:text-[#B5BAC1] hover:bg-layer-3'
+        active ? 'bg-layer-4 text-fg' : 'text-fg-3 hover:text-fg-2 hover:bg-layer-3'
       }`}
     >
       {icon}
@@ -52,8 +52,8 @@ export default function UserSettings({ onClose }: Props) {
       <div className="w-56 bg-layer-1 flex flex-col shrink-0">
         <div className="flex-1 overflow-y-auto pt-6 pb-4 px-2">
           <div className="px-3 mb-6">
-            <h2 className="text-white font-bold text-base truncate">{user.displayName}</h2>
-            <p className="text-[#80848E] text-xs mt-0.5">User Settings</p>
+            <h2 className="text-fg font-bold text-base truncate">{user.displayName}</h2>
+            <p className="text-fg-3 text-xs mt-0.5">User Settings</p>
           </div>
 
           <NavSection title="">
@@ -66,7 +66,7 @@ export default function UserSettings({ onClose }: Props) {
 
         <div className="px-2 pb-4">
           <div className="h-px bg-layer-4 mx-2 mb-3" />
-          <button onClick={onClose} className="w-full flex items-center gap-2 px-3 py-2 rounded text-[#80848E] hover:text-[#B5BAC1] hover:bg-layer-3 transition-colors cursor-pointer text-sm">
+          <button onClick={onClose} className="w-full flex items-center gap-2 px-3 py-2 rounded text-fg-3 hover:text-fg-2 hover:bg-layer-3 transition-colors cursor-pointer text-sm">
             <ChevronLeft className="w-4 h-4" /> Back
           </button>
         </div>
@@ -75,7 +75,7 @@ export default function UserSettings({ onClose }: Props) {
       <div className="flex-1 flex flex-col overflow-hidden bg-layer-2 relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-9 h-9 rounded-full border-2 border-[#80848E] flex items-center justify-center text-[#80848E] hover:border-white hover:text-white transition-colors cursor-pointer z-10"
+          className="absolute top-4 right-4 w-9 h-9 rounded-full border-2 border-fg-4 flex items-center justify-center text-fg-3 hover:border-white hover:text-fg transition-colors cursor-pointer z-10"
         >
           <X className="w-4 h-4" />
         </button>
@@ -185,14 +185,14 @@ function MyAccountPage({ user, onUpdate }: { user: User; onUpdate: (u: User) => 
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-2xl px-8 py-6">
-        <h2 className="text-white font-bold text-xl mb-1">My Account</h2>
-        <p className="text-[#B5BAC1] text-sm mb-6">
+        <h2 className="text-fg font-bold text-xl mb-1">My Account</h2>
+        <p className="text-fg-2 text-sm mb-6">
           Manage your account settings.
         </p>
 
         <div className="space-y-6">
           <div>
-            <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-2">Name</label>
+            <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-2">Name</label>
             <input
               type="text"
               value={displayName}
@@ -203,7 +203,7 @@ function MyAccountPage({ user, onUpdate }: { user: User; onUpdate: (u: User) => 
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-2">Username</label>
+            <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-2">Username</label>
             <input
               type="text"
               value={username}
@@ -214,8 +214,8 @@ function MyAccountPage({ user, onUpdate }: { user: User; onUpdate: (u: User) => 
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-2">Avatar</label>
-            <p className="text-[#80848E] text-xs mb-2">We recommend an image of at least 128x128</p>
+            <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-2">Avatar</label>
+            <p className="text-fg-3 text-xs mb-2">We recommend an image of at least 128x128</p>
             <div className="flex items-center gap-4">
               <div className="w-20 h-20 rounded-full bg-layer-4 flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-layer-5">
                 {avatar ? (
@@ -257,16 +257,16 @@ function MyAccountPage({ user, onUpdate }: { user: User; onUpdate: (u: User) => 
         </div>
 
         <div className="mt-10 pt-8 border-t border-layer-4">
-          <h3 className="text-white font-bold text-lg mb-1 flex items-center gap-2">
+          <h3 className="text-fg font-bold text-lg mb-1 flex items-center gap-2">
             <Lock className="w-4 h-4" />
             Change Password
           </h3>
-          <p className="text-[#B5BAC1] text-sm mb-4">
+          <p className="text-fg-2 text-sm mb-4">
             Enter your current password and choose a new one.
           </p>
           <div className="space-y-4 max-w-md">
             <div>
-              <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-1">Current Password</label>
+              <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-1">Current Password</label>
               <input
                 type="password"
                 value={currentPassword}
@@ -276,7 +276,7 @@ function MyAccountPage({ user, onUpdate }: { user: User; onUpdate: (u: User) => 
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-1">New Password</label>
+              <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-1">New Password</label>
               <input
                 type="password"
                 value={newPassword}
@@ -286,7 +286,7 @@ function MyAccountPage({ user, onUpdate }: { user: User; onUpdate: (u: User) => 
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-1">Confirm New Password</label>
+              <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-1">Confirm New Password</label>
               <input
                 type="password"
                 value={confirmPassword}
@@ -352,7 +352,7 @@ function DeleteAccountSection() {
         <Trash2 className="w-4 h-4" />
         Delete Account
       </h3>
-      <p className="text-[#B5BAC1] text-sm mb-4">
+      <p className="text-fg-2 text-sm mb-4">
         Permanently delete your account and all associated data. This action cannot be undone.
       </p>
 
@@ -367,7 +367,7 @@ function DeleteAccountSection() {
 
       {step === 'confirm' && (
         <div className="bg-danger-500/5 border border-danger-500/20 rounded-lg p-4 max-w-md">
-          <p className="text-[#B5BAC1] text-sm mb-3">
+          <p className="text-fg-2 text-sm mb-3">
             Are you sure? This will permanently delete your account, messages, and remove you from all servers.
           </p>
           <div className="flex gap-2">
@@ -380,7 +380,7 @@ function DeleteAccountSection() {
             </button>
             <button
               onClick={() => setStep('idle')}
-              className="px-4 py-2 rounded text-sm font-medium text-[#B5BAC1] hover:text-white hover:bg-layer-4 cursor-pointer transition-colors"
+              className="px-4 py-2 rounded text-sm font-medium text-fg-2 hover:text-fg hover:bg-layer-4 cursor-pointer transition-colors"
             >
               Cancel
             </button>
@@ -390,7 +390,7 @@ function DeleteAccountSection() {
 
       {step === 'otp' && (
         <div className="bg-danger-500/5 border border-danger-500/20 rounded-lg p-4 max-w-md">
-          <p className="text-[#B5BAC1] text-sm mb-3">
+          <p className="text-fg-2 text-sm mb-3">
             Enter the 6-digit verification code sent to your email to confirm deletion.
           </p>
           <input
@@ -412,7 +412,7 @@ function DeleteAccountSection() {
             </button>
             <button
               onClick={() => { setStep('idle'); setOtpCode(''); }}
-              className="px-4 py-2 rounded text-sm font-medium text-[#B5BAC1] hover:text-white hover:bg-layer-4 cursor-pointer transition-colors"
+              className="px-4 py-2 rounded text-sm font-medium text-fg-2 hover:text-fg hover:bg-layer-4 cursor-pointer transition-colors"
             >
               Cancel
             </button>
@@ -489,15 +489,15 @@ function ProfilePage({ user, onUpdate }: { user: User; onUpdate: (u: User) => vo
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-2xl px-8 py-6">
-        <h2 className="text-white font-bold text-xl mb-1">Profile</h2>
-        <p className="text-[#B5BAC1] text-sm mb-6">
+        <h2 className="text-fg font-bold text-xl mb-1">Profile</h2>
+        <p className="text-fg-2 text-sm mb-6">
           Customize your profile with a banner and custom status.
         </p>
 
         <div className="space-y-6">
           <div>
-            <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-2">Profile Banner</label>
-            <p className="text-[#80848E] text-xs mb-2">Shown in your profile. Choose a color or upload an image.</p>
+            <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-2">Profile Banner</label>
+            <p className="text-fg-3 text-xs mb-2">Shown in your profile. Choose a color or upload an image.</p>
             <div className="flex flex-wrap gap-2 mb-3">
               {PROFILE_BANNER_COLORS.map((c) => (
                 <button
@@ -533,7 +533,7 @@ function ProfilePage({ user, onUpdate }: { user: User; onUpdate: (u: User) => vo
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#B5BAC1] uppercase tracking-wide mb-2">Custom Status</label>
+            <label className="block text-xs font-semibold text-fg-2 uppercase tracking-wide mb-2">Custom Status</label>
             <input
               type="text"
               value={activityStatus}
@@ -542,7 +542,7 @@ function ProfilePage({ user, onUpdate }: { user: User; onUpdate: (u: User) => vo
               placeholder="What's on your mind?"
               maxLength={128}
             />
-            <p className="text-[#80848E] text-xs mt-1">{activityStatus.length}/128</p>
+            <p className="text-fg-3 text-xs mt-1">{activityStatus.length}/128</p>
           </div>
 
           {hasChanges && (
@@ -581,29 +581,29 @@ function PrivacyPage({ user, onUpdate }: { user: User; onUpdate: (u: User) => vo
 
   return (
     <div className="flex-1 overflow-y-auto px-8 py-6">
-      <h2 className="text-white font-bold text-xl mb-1">Privacy</h2>
-      <p className="text-[#B5BAC1] text-sm mb-8">
+      <h2 className="text-fg font-bold text-xl mb-1">Privacy</h2>
+      <p className="text-fg-2 text-sm mb-8">
         Control who can message you and send you friend requests.
       </p>
 
       <div className="space-y-8 max-w-2xl">
         <div>
-          <h3 className="text-white font-semibold text-base mb-2">Direct Messages</h3>
-          <p className="text-[#B5BAC1] text-sm mb-3">
+          <h3 className="text-fg font-semibold text-base mb-2">Direct Messages</h3>
+          <p className="text-fg-2 text-sm mb-3">
             Allow server members to send you direct messages.
           </p>
           <div className="flex items-center gap-3">
             <button
               onClick={() => handleSave({ allowDMs: true })}
               disabled={saving}
-              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${allowDMs ? 'bg-accent-500 text-white' : 'bg-layer-3 text-[#B5BAC1] hover:bg-layer-4'}`}
+              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${allowDMs ? 'bg-accent-500 text-on-primary' : 'bg-layer-3 text-fg-2 hover:bg-layer-4'}`}
             >
               On
             </button>
             <button
               onClick={() => handleSave({ allowDMs: false })}
               disabled={saving}
-              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${!allowDMs ? 'bg-accent-500 text-white' : 'bg-layer-3 text-[#B5BAC1] hover:bg-layer-4'}`}
+              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${!allowDMs ? 'bg-accent-500 text-on-primary' : 'bg-layer-3 text-fg-2 hover:bg-layer-4'}`}
             >
               Off
             </button>
@@ -611,8 +611,8 @@ function PrivacyPage({ user, onUpdate }: { user: User; onUpdate: (u: User) => vo
         </div>
 
         <div>
-          <h3 className="text-white font-semibold text-base mb-2">Friend Requests</h3>
-          <p className="text-[#B5BAC1] text-sm mb-4">
+          <h3 className="text-fg font-semibold text-base mb-2">Friend Requests</h3>
+          <p className="text-fg-2 text-sm mb-4">
             Who can send you friend requests.
           </p>
           <div className="space-y-2 max-w-sm">
@@ -633,15 +633,15 @@ function PrivacyPage({ user, onUpdate }: { user: User; onUpdate: (u: User) => vo
                 }`}
               >
                 <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${
-                  allowFriendRequests === opt.value ? 'border-accent-500' : 'border-[#80848E]'
+                  allowFriendRequests === opt.value ? 'border-accent-500' : 'border-fg-4'
                 }`}>
                   {allowFriendRequests === opt.value && <div className="w-2 h-2 rounded-full bg-accent-500" />}
                 </div>
                 <div className="min-w-0">
-                  <p className={`text-sm font-medium ${allowFriendRequests === opt.value ? 'text-white' : 'text-[#B5BAC1]'}`}>
+                  <p className={`text-sm font-medium ${allowFriendRequests === opt.value ? 'text-fg' : 'text-fg-2'}`}>
                     {opt.label}
                   </p>
-                  <p className="text-2xs text-[#80848E]">{opt.desc}</p>
+                  <p className="text-2xs text-fg-3">{opt.desc}</p>
                 </div>
               </button>
             ))}
@@ -735,29 +735,29 @@ function NotificationsPage({ user, onUpdate }: { user: User; onUpdate: (u: User)
 
   return (
     <div className="flex-1 overflow-y-auto px-8 py-6">
-      <h2 className="text-white font-bold text-xl mb-1">Notifications</h2>
-      <p className="text-[#B5BAC1] text-sm mb-8">
+      <h2 className="text-fg font-bold text-xl mb-1">Notifications</h2>
+      <p className="text-fg-2 text-sm mb-8">
         Control how you receive notifications for @mentions and @everyone.
       </p>
 
       <div className="space-y-8 max-w-2xl">
         <div>
-          <h3 className="text-white font-semibold text-base mb-2">Notification Sound</h3>
-          <p className="text-[#B5BAC1] text-sm mb-3">
+          <h3 className="text-fg font-semibold text-base mb-2">Notification Sound</h3>
+          <p className="text-fg-2 text-sm mb-3">
             Play a sound when you receive a mention or @everyone while the app is in focus.
           </p>
           <div className="flex items-center gap-3">
             <button
               onClick={() => handleSetNotificationSound(true)}
               disabled={savingSound}
-              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${notificationSound ? 'bg-accent-500 text-white' : 'bg-layer-3 text-[#B5BAC1] hover:bg-layer-4'}`}
+              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${notificationSound ? 'bg-accent-500 text-on-primary' : 'bg-layer-3 text-fg-2 hover:bg-layer-4'}`}
             >
               On
             </button>
             <button
               onClick={() => handleSetNotificationSound(false)}
               disabled={savingSound}
-              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${!notificationSound ? 'bg-accent-500 text-white' : 'bg-layer-3 text-[#B5BAC1] hover:bg-layer-4'}`}
+              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${!notificationSound ? 'bg-accent-500 text-on-primary' : 'bg-layer-3 text-fg-2 hover:bg-layer-4'}`}
             >
               Off
             </button>
@@ -765,12 +765,12 @@ function NotificationsPage({ user, onUpdate }: { user: User; onUpdate: (u: User)
         </div>
 
         <div>
-          <h3 className="text-white font-semibold text-base mb-2">Desktop Notifications</h3>
-          <p className="text-[#B5BAC1] text-sm mb-3">
+          <h3 className="text-fg font-semibold text-base mb-2">Desktop Notifications</h3>
+          <p className="text-fg-2 text-sm mb-3">
             Get notified when you are mentioned or when someone uses @everyone, even when the app is in the background.
           </p>
           {isDenied ? (
-            <p className="text-[#80848E] text-sm">
+            <p className="text-fg-3 text-sm">
               Notifications are blocked by your browser. Enable them in your browser settings to use this feature.
             </p>
           ) : isActive ? (
@@ -793,12 +793,12 @@ function NotificationsPage({ user, onUpdate }: { user: User; onUpdate: (u: User)
         </div>
 
         <div>
-          <h3 className="text-white font-semibold text-base mb-2">Muted Servers</h3>
-          <p className="text-[#B5BAC1] text-sm mb-4">
+          <h3 className="text-fg font-semibold text-base mb-2">Muted Servers</h3>
+          <p className="text-fg-2 text-sm mb-4">
             Muted servers will not send you notifications for @mentions or @everyone.
           </p>
           {mutedServers.length === 0 ? (
-            <p className="text-[#80848E] text-sm">No servers muted.</p>
+            <p className="text-fg-3 text-sm">No servers muted.</p>
           ) : (
             <div className="space-y-2">
               {mutedServers.map((s) => (
@@ -811,10 +811,10 @@ function NotificationsPage({ user, onUpdate }: { user: User; onUpdate: (u: User)
                       {s.icon ? (
                         <img src={s.icon} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-white text-sm font-bold">{s.name.charAt(0).toUpperCase()}</span>
+                        <span className="text-fg text-sm font-bold">{s.name.charAt(0).toUpperCase()}</span>
                       )}
                     </div>
-                    <span className="text-white font-medium">{s.name}</span>
+                    <span className="text-fg font-medium">{s.name}</span>
                   </div>
                   <button
                     onClick={() => handleToggleMute(s._id)}

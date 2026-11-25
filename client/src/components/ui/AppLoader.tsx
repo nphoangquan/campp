@@ -5,21 +5,17 @@ interface Props {
 export default function AppLoader({ message }: Props) {
   return (
     <div
-      className="fixed inset-0 h-full min-h-dvh w-full overflow-hidden bg-layer-0 flex flex-col items-center justify-center gap-6"
+      className="fixed inset-0 h-full min-h-dvh w-full overflow-hidden bg-fg flex flex-col items-center justify-center gap-5"
       role="status"
       aria-live="polite"
       aria-label={message || 'Loading'}
     >
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-accent-500 flex items-center justify-center shadow-lg shadow-accent-500/20">
-          <span className="text-white text-2xl font-bold">C</span>
-        </div>
-        <h1 className="text-xl font-semibold text-white tracking-tight">Camp</h1>
+      <div className="flex items-center gap-3.5" aria-hidden="true">
+        <span className="block w-px h-12 bg-fg" />
+        <span className="block w-7 h-[7px] border-y-2 border-tick-now animate-pulse motion-reduce:animate-none" />
+        <span className="font-pixel text-[22px] leading-none tracking-[0.06em] text-fg">CAMP</span>
       </div>
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-2 border-accent-500/30 border-t-accent-500 rounded-full animate-spin" />
-        {message && <p className="text-[#80848E] text-sm">{message}</p>}
-      </div>
+      {message && <p className="text-fg-4 text-sm">{message}</p>}
     </div>
   );
 }

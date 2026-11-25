@@ -15,7 +15,7 @@ export default function VoicePanel() {
           <Signal className="w-4 h-4 text-online" />
           <div className="flex-1 min-w-0">
             <p className="text-online text-xs font-semibold">Voice Connected</p>
-            <p className="text-[#80848E] text-2xs truncate">{channelName}</p>
+            <p className="text-fg-3 text-2xs truncate">{channelName}</p>
           </div>
         </div>
       </div>
@@ -27,7 +27,7 @@ export default function VoicePanel() {
           className={`flex-1 h-8 rounded flex items-center justify-center cursor-pointer transition-colors ${
             muted
               ? 'bg-danger-500/20 text-danger-400 hover:bg-danger-500/30'
-              : 'bg-layer-4 text-[#B5BAC1] hover:bg-layer-5'
+              : 'bg-layer-4 text-fg-2 hover:bg-layer-5'
           }`}
           title={muted ? 'Unmute' : 'Mute'}
         >
@@ -39,7 +39,7 @@ export default function VoicePanel() {
           className={`flex-1 h-8 rounded flex items-center justify-center cursor-pointer transition-colors ${
             deafened
               ? 'bg-danger-500/20 text-danger-400 hover:bg-danger-500/30'
-              : 'bg-layer-4 text-[#B5BAC1] hover:bg-layer-5'
+              : 'bg-layer-4 text-fg-2 hover:bg-layer-5'
           }`}
           title={deafened ? 'Undeafen' : 'Deafen'}
         >

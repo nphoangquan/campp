@@ -152,16 +152,16 @@ export default function DMChat({ conversationId, onOpenDMSidebar, showMenuButton
         {showMenuButton && onOpenDMSidebar && (
           <button
             onClick={onOpenDMSidebar}
-            className="p-1.5 rounded text-[#80848E] hover:text-white hover:bg-layer-4 transition-colors -ml-1"
+            className="p-1.5 rounded text-fg-3 hover:text-fg hover:bg-layer-4 transition-colors -ml-1"
             aria-label="Open direct messages"
           >
             <Menu className="w-5 h-5" />
           </button>
         )}
-        <span className="text-[#80848E]">@</span>
-        <span className="text-white font-semibold text-sm truncate flex-1 min-w-0">{otherUser?.displayName || 'Direct Message'}</span>
+        <span className="text-fg-3">@</span>
+        <span className="text-fg font-semibold text-sm truncate flex-1 min-w-0">{otherUser?.displayName || 'Direct Message'}</span>
         {otherUser && (
-          <span className={`w-2 h-2 rounded-full shrink-0 ${otherUser.status === 'online' ? 'bg-online' : otherUser.status === 'idle' ? 'bg-idle' : otherUser.status === 'dnd' ? 'bg-dnd' : 'bg-[#80848E]'}`} />
+          <span className={`w-2 h-2 rounded-full shrink-0 ${otherUser.status === 'online' ? 'bg-online' : otherUser.status === 'idle' ? 'bg-idle' : otherUser.status === 'dnd' ? 'bg-dnd' : 'bg-fg-4'}`} />
         )}
         <InboxButton />
       </div>
@@ -175,11 +175,11 @@ export default function DMChat({ conversationId, onOpenDMSidebar, showMenuButton
               {otherUser.avatar ? (
                 <img src={otherUser.avatar} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-white text-2xl font-bold">{otherUser.displayName.charAt(0).toUpperCase()}</span>
+                <span className="text-fg text-2xl font-bold">{otherUser.displayName.charAt(0).toUpperCase()}</span>
               )}
             </div>
-            <h2 className="text-white font-bold text-xl">{otherUser.displayName}</h2>
-            <p className="text-[#80848E] text-sm">This is the beginning of your direct message history with <strong className="text-white">{otherUser.displayName}</strong>.</p>
+            <h2 className="text-fg font-bold text-xl">{otherUser.displayName}</h2>
+            <p className="text-fg-3 text-sm">This is the beginning of your direct message history with <strong className="text-fg">{otherUser.displayName}</strong>.</p>
           </div>
         )}
 
@@ -214,19 +214,19 @@ export default function DMChat({ conversationId, onOpenDMSidebar, showMenuButton
                         {msg.authorId.avatar ? (
                           <img src={msg.authorId.avatar} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-white text-sm font-bold">{msg.authorId.displayName.charAt(0).toUpperCase()}</span>
+                          <span className="text-fg text-sm font-bold">{msg.authorId.displayName.charAt(0).toUpperCase()}</span>
                         )}
                       </div>
                       <div className={`flex-1 min-w-0 ${isMe ? 'text-right' : 'text-left'}`}>
                         <div className={`flex items-baseline gap-2 ${isMe ? 'justify-end' : ''}`}>
-                          <span className="text-white font-medium text-sm hover:underline cursor-pointer">{msg.authorId.displayName}</span>
-                          <span className="text-[#80848E] text-xs">{formatDistanceToNowStrict(new Date(msg.createdAt), { addSuffix: true })}</span>
+                          <span className="text-fg font-medium text-sm hover:underline cursor-pointer">{msg.authorId.displayName}</span>
+                          <span className="text-fg-3 text-xs">{formatDistanceToNowStrict(new Date(msg.createdAt), { addSuffix: true })}</span>
                         </div>
                         {msg.content && (
                           <>
-                            <div className={`inline-block rounded-2xl px-3.5 py-2 mt-1 ${isMe ? 'bg-accent-500 text-white' : 'bg-layer-3 text-[#DBDEE1]'} ${isUnread ? 'font-bold ring-1 ring-accent-400/40' : ''}`}>
+                            <div className={`inline-block rounded-2xl px-3.5 py-2 mt-1 ${isMe ? 'bg-accent-500 text-on-primary' : 'bg-layer-3 text-fg'} ${isUnread ? 'font-bold ring-1 ring-accent-400/40' : ''}`}>
                               <div className="text-sm leading-relaxed break-words">
-                                <MarkdownContent content={msg.content} className={isMe ? 'text-white' : 'text-[#DBDEE1]'} />
+                                <MarkdownContent content={msg.content} className={isMe ? 'text-fg' : 'text-fg'} />
                               </div>
                             </div>
                             {extractUrls(msg.content).slice(0, 3).map((url) => (
@@ -241,7 +241,7 @@ export default function DMChat({ conversationId, onOpenDMSidebar, showMenuButton
                             {isRead ? (
                               <CheckCheck className="w-3.5 h-3.5 text-accent-400" />
                             ) : (
-                              <Check className="w-3.5 h-3.5 text-[#5C5F66]" />
+                              <Check className="w-3.5 h-3.5 text-fg-4" />
                             )}
                           </div>
                         )}
@@ -251,9 +251,9 @@ export default function DMChat({ conversationId, onOpenDMSidebar, showMenuButton
                     <div className={`${isMe ? 'text-right' : 'pl-[52px] text-left'}`}>
                       {msg.content && (
                         <>
-                          <div className={`inline-block rounded-2xl px-3.5 py-2 ${isMe ? 'bg-accent-500 text-white' : 'bg-layer-3 text-[#DBDEE1]'} ${isUnread ? 'font-bold ring-1 ring-accent-400/40' : ''}`}>
+                          <div className={`inline-block rounded-2xl px-3.5 py-2 ${isMe ? 'bg-accent-500 text-on-primary' : 'bg-layer-3 text-fg'} ${isUnread ? 'font-bold ring-1 ring-accent-400/40' : ''}`}>
                             <div className="text-sm leading-relaxed break-words">
-                              <MarkdownContent content={msg.content} className={isMe ? 'text-white' : 'text-[#DBDEE1]'} />
+                              <MarkdownContent content={msg.content} className={isMe ? 'text-fg' : 'text-fg'} />
                             </div>
                           </div>
                           {extractUrls(msg.content).slice(0, 3).map((url) => (
@@ -267,7 +267,7 @@ export default function DMChat({ conversationId, onOpenDMSidebar, showMenuButton
                           {isRead ? (
                             <CheckCheck className="w-3.5 h-3.5 text-accent-400" />
                           ) : (
-                            <Check className="w-3.5 h-3.5 text-[#5C5F66]" />
+                            <Check className="w-3.5 h-3.5 text-fg-4" />
                           )}
                         </div>
                       )}
@@ -292,11 +292,11 @@ export default function DMChat({ conversationId, onOpenDMSidebar, showMenuButton
                 ) : (
                   <div className="w-[150px] h-[60px] flex items-center gap-2 px-2">
                     <FileText className="w-6 h-6 text-accent-400 shrink-0" />
-                    <span className="text-[#B5BAC1] text-xs truncate">{att.name}</span>
+                    <span className="text-fg-2 text-xs truncate">{att.name}</span>
                   </div>
                 )}
                 <button onClick={() => removePendingAttachment(i)} className="absolute -top-2 -right-2 w-5 h-5 bg-danger-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-danger-400">
-                  <X className="w-3 h-3 text-white" />
+                  <X className="w-3 h-3 text-fg" />
                 </button>
               </div>
             ))}
@@ -307,7 +307,7 @@ export default function DMChat({ conversationId, onOpenDMSidebar, showMenuButton
       {/* Input */}
       <div className="px-4 pb-4 pt-2">
         <div className="flex items-center gap-2 bg-layer-3 rounded-lg px-4 py-2.5">
-          <button onClick={() => fileInputRef.current?.click()} className="text-[#80848E] hover:text-[#B5BAC1] cursor-pointer transition-colors" disabled={uploading}>
+          <button onClick={() => fileInputRef.current?.click()} className="text-fg-3 hover:text-fg-2 cursor-pointer transition-colors" disabled={uploading}>
             <Paperclip className="w-5 h-5" />
           </button>
           <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileUpload} accept="image/*,video/*,.pdf,.txt,.zip,.rar" />
@@ -316,13 +316,13 @@ export default function DMChat({ conversationId, onOpenDMSidebar, showMenuButton
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            className="flex-1 bg-transparent text-[#DBDEE1] placeholder-[#5C5F66] text-sm outline-none"
+            className="flex-1 bg-transparent text-fg placeholder-fg-4 text-sm outline-none"
             placeholder={`Message @${otherUser?.displayName || '...'}`}
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() && pendingAttachments.length === 0}
-            className="text-accent-400 hover:text-accent-300 disabled:text-[#5C5F66] cursor-pointer disabled:cursor-not-allowed transition-colors"
+            className="text-accent-400 hover:text-accent-300 disabled:text-fg-4 cursor-pointer disabled:cursor-not-allowed transition-colors"
           >
             <Send className="w-5 h-5" />
           </button>
@@ -333,7 +333,7 @@ export default function DMChat({ conversationId, onOpenDMSidebar, showMenuButton
       {
         lightboxUrl && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 cursor-pointer" onClick={() => setLightboxUrl(null)}>
-            <button className="absolute top-4 right-4 text-white/70 hover:text-white cursor-pointer" onClick={() => setLightboxUrl(null)}>
+            <button className="absolute top-4 right-4 text-fg/70 hover:text-fg cursor-pointer" onClick={() => setLightboxUrl(null)}>
               <X className="w-8 h-8" />
             </button>
             <img src={lightboxUrl} alt="Preview" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()} />

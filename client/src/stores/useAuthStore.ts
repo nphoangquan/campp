@@ -6,7 +6,9 @@ interface AuthState {
   accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  setAuth: (user: User, accessToken: string) => void;
+  /** Where a guest page should send the user once they are signed in. */
+  nextPath: string | null;
+  setAuth: (user: User, accessToken: string, nextPath?: string) => void;
   setUser: (user: User) => void;
   setAccessToken: (token: string) => void;
   setUserStatus: (status: User['status']) => void;
@@ -19,13 +21,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   accessToken: null,
   isAuthenticated: false,
   isLoading: true,
-  setAuth: (user, accessToken) =>
-    set({ user, accessToken, isAuthenticated: true, isLoading: false }),
+  nextPath: null,
+  setAuth: (user, accessToken, nextPath) =>
+    set({ user, accessToken, isAuthenticated: true, isLoading: false, nextPath: nextPath ?? null }),
   setUser: (user) => set({ user }),
   setAccessToken: (accessToken) => set({ accessToken }),
   setUserStatus: (status) =>
     set((s) => (s.user ? { user: { ...s.user, status } } : s)),
   logout: () =>
-    set({ user: null, accessToken: null, isAuthenticated: false, isLoading: false }),
+    set({ user: null, accessToken: null, isAuthenticated: false, isLoading: false, nextPath: null }),
   setLoading: (isLoading) => set({ isLoading }),
 }));

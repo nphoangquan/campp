@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { useAuthStore } from './stores/useAuthStore';
+import { useTheme } from './hooks/useTheme';
 
 import { authApi } from './services/api/auth.api';
 import { setDesktopNotificationsEnabled } from './hooks/useNotifications';
@@ -13,6 +14,7 @@ import VerifyOtpPage from './pages/VerifyOtpPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AppPage from './pages/AppPage';
 import InvitePage from './pages/InvitePage';
+import WelcomePage from './pages/WelcomePage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -21,12 +23,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
-  return isAuthenticated ? <Navigate to="/" replace /> : <>{children}</>;
+  const { isAuthenticated, nextPath } = useAuthStore();
+  // Signing in on a guest page re-renders this route before the page's own
+  // navigate lands, so honour the page's intended destination here.
+  return isAuthenticated ? <Navigate to={nextPath || '/'} replace /> : <>{children}</>;
 }
 
 export default function App() {
   const { setAuth, logout, setLoading, isLoading } = useAuthStore();
+  const { resolved: resolvedTheme } = useTheme();
 
   // Kiem tra session khi app load: refresh truoc de co token, roi getMe
   useEffect(() => {
@@ -66,12 +71,15 @@ export default function App() {
       <>
         <Toaster
           position="top-right"
-          theme="dark"
+          theme={resolvedTheme}
           toastOptions={{
             style: {
-              background: '#222229',
-              border: '1px solid #33333d',
-              color: '#B5BAC1',
+              background: 'var(--surface)',
+              border: '1px solid var(--line-strong)',
+              borderRadius: '2px',
+              color: 'var(--fg)',
+              fontFamily: "'Be Vietnam Pro', system-ui, sans-serif",
+              fontSize: '15px',
             },
           }}
         />
@@ -84,13 +92,16 @@ export default function App() {
     <BrowserRouter>
       <Toaster
         position="top-right"
-        theme="dark"
+        theme={resolvedTheme}
         toastOptions={{
           style: {
-            background: '#222229',
-            border: '1px solid #33333d',
-            color: '#B5BAC1',
-          },
+              background: 'var(--surface)',
+              border: '1px solid var(--line-strong)',
+              borderRadius: '2px',
+              color: 'var(--fg)',
+              fontFamily: "'Be Vietnam Pro', system-ui, sans-serif",
+              fontSize: '15px',
+            },
         }}
       />
       <Routes>
@@ -171,6 +182,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <AppPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/welcome"
+          element={
+            <ProtectedRoute>
+              <WelcomePage />
             </ProtectedRoute>
           }
         />

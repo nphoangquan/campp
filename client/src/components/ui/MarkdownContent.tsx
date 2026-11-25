@@ -24,7 +24,7 @@ function parseMarkdown(text: string): React.ReactNode[] {
     {
       regex: /```([\s\S]*?)```/,
       render: ([, code]) => (
-        <code key={key++} className="block bg-layer-3 rounded px-2 py-1.5 text-sm font-mono text-[#B5BAC1] my-1 overflow-x-auto">
+        <code key={key++} className="block bg-layer-3 rounded px-2 py-1.5 text-sm font-mono text-fg-2 my-1 overflow-x-auto">
           {escapeHtml((code || '').trim())}
         </code>
       ),
@@ -42,7 +42,7 @@ function parseMarkdown(text: string): React.ReactNode[] {
     {
       regex: /\*\*(.+?)\*\*|__(.+?)__/,
       render: ([, a, b]) => (
-        <strong key={key++} className="font-semibold text-white">
+        <strong key={key++} className="font-semibold text-fg">
           {escapeHtml(a || b || '')}
         </strong>
       ),
@@ -60,7 +60,7 @@ function parseMarkdown(text: string): React.ReactNode[] {
     {
       regex: /~~(.+?)~~/,
       render: ([, s]) => (
-        <del key={key++} className="line-through text-[#80848E]">
+        <del key={key++} className="line-through text-fg-3">
           {escapeHtml(s)}
         </del>
       ),
@@ -69,7 +69,7 @@ function parseMarkdown(text: string): React.ReactNode[] {
     {
       regex: /\|\|(.+?)\|\|/,
       render: ([, s]) => (
-        <span key={key++} className="spoiler bg-[#4E5058] text-transparent hover:bg-transparent hover:text-[#DBDEE1] rounded px-0.5 cursor-default" title="Spoiler - click to reveal">
+        <span key={key++} className="spoiler bg-fg-4 text-transparent hover:bg-transparent hover:text-fg rounded px-0.5 cursor-default" title="Spoiler - click to reveal">
           {escapeHtml(s)}
         </span>
       ),
@@ -93,7 +93,7 @@ function parseMarkdown(text: string): React.ReactNode[] {
     {
       regex: /@([a-zA-Z0-9_][a-zA-Z0-9_\s]*?)(?=\s|$|@|[,.\?!)\]>])/,
       render: ([, name]) => (
-        <span key={key++} className="bg-accent-500/20 text-accent-200 px-1 rounded mention">
+        <span key={key++} className="bg-link/10 text-link font-semibold px-1 rounded-[2px] mention">
           @{escapeHtml((name || '').trim())}
         </span>
       ),
@@ -139,7 +139,7 @@ interface Props {
 export default function MarkdownContent({ content, className = '' }: Props) {
   const nodes = parseMarkdown(content);
   return (
-    <span className={`text-[#B5BAC1] text-sm break-words ${className}`}>
+    <span className={`text-fg-2 text-sm break-words ${className}`}>
       {nodes}
     </span>
   );

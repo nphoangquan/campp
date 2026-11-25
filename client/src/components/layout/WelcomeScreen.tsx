@@ -17,20 +17,20 @@ export default function WelcomeScreen({ server, onClose }: Props) {
         <div className="relative bg-layer-2 px-8 pt-10 pb-6 text-center">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-[#80848E] hover:text-white transition-colors cursor-pointer"
+            className="absolute top-4 right-4 text-fg-3 hover:text-fg transition-colors cursor-pointer"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
           <div className="w-20 h-20 rounded-2xl bg-accent-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-white text-3xl font-bold">
+            <span className="text-fg text-3xl font-bold">
               {server.name?.charAt(0).toUpperCase() || 'S'}
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-1">
+          <h1 className="text-2xl font-bold text-fg mb-1">
             Welcome to {server.name}
           </h1>
-          <p className="text-[#B5BAC1] text-sm">
+          <p className="text-fg-2 text-sm">
             You have joined the server successfully.
           </p>
         </div>
@@ -39,11 +39,11 @@ export default function WelcomeScreen({ server, onClose }: Props) {
         <div className="px-8 py-6 flex gap-6 justify-center border-t border-layer-3">
           <div className="text-center">
             <div className="text-2xl font-bold text-accent-400">{channelCount}</div>
-            <div className="text-xs text-[#80848E] uppercase tracking-wider">Channels</div>
+            <div className="text-xs text-fg-3 uppercase tracking-wider">Channels</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-accent-400">{memberCount}</div>
-            <div className="text-xs text-[#80848E] uppercase tracking-wider">Members</div>
+            <div className="text-xs text-fg-3 uppercase tracking-wider">Members</div>
           </div>
         </div>
 
@@ -51,7 +51,7 @@ export default function WelcomeScreen({ server, onClose }: Props) {
         <div className="px-8 pb-8">
           <button
             onClick={onClose}
-            className="w-full py-3 bg-accent-500 hover:bg-accent-400 text-white font-semibold rounded-lg transition-colors cursor-pointer"
+            className="w-full py-3 bg-accent-500 hover:bg-accent-400 text-on-primary font-semibold rounded-lg transition-colors cursor-pointer"
           >
             Explore Server
           </button>

@@ -54,16 +54,16 @@ export default function VoiceCallView(_props: VoiceCallViewProps) {
   );
 
   return (
-    <div className="flex-1 flex h-full bg-[#0f0f12] overflow-hidden">
+    <div className="flex-1 flex h-full bg-rail overflow-hidden">
       {/* Main call area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <div className="h-12 px-4 flex items-center gap-3 bg-[#1a1a22]/80 border-b border-white/5 shrink-0">
+        <div className="h-12 px-4 flex items-center gap-3 bg-surface/80 border-b border-line shrink-0">
           <div className="relative" ref={volumePopoverRef}>
             <button
               type="button"
               onClick={() => setVolumePopoverOpen((o) => !o)}
-              className={`p-1.5 rounded transition-colors ${volumePopoverOpen ? 'bg-layer-4 text-white' : 'text-[#80848E] hover:text-white hover:bg-layer-4'}`}
+              className={`p-1.5 rounded transition-colors ${volumePopoverOpen ? 'bg-layer-4 text-fg' : 'text-fg-3 hover:text-fg hover:bg-layer-4'}`}
               title="Output volume"
             >
               <Volume2 className="w-5 h-5" />
@@ -75,7 +75,7 @@ export default function VoiceCallView(_props: VoiceCallViewProps) {
               />
             )}
           </div>
-          <span className="text-white font-semibold text-sm">{channelName || 'Voice Channel'}</span>
+          <span className="text-fg font-semibold text-sm">{channelName || 'Voice Channel'}</span>
           <span className="px-2 py-0.5 rounded-full bg-danger-500 text-white text-2xs font-bold uppercase tracking-wider animate-pulse">
             Live
           </span>
@@ -87,13 +87,13 @@ export default function VoiceCallView(_props: VoiceCallViewProps) {
               return (
                 <div
                   key={p.userId}
-                  className="w-7 h-7 rounded-full bg-layer-4 border-2 border-[#1a1a22] flex items-center justify-center overflow-hidden"
+                  className="w-7 h-7 rounded-full bg-layer-4 border-2 border-line flex items-center justify-center overflow-hidden"
                   title={member?.displayName || p.userId}
                 >
                   {member?.avatar ? (
                     <img src={member.avatar} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-white text-2xs font-semibold">
+                    <span className="text-fg text-2xs font-semibold">
                       {(member?.displayName || '?').charAt(0).toUpperCase()}
                     </span>
                   )}
@@ -101,14 +101,14 @@ export default function VoiceCallView(_props: VoiceCallViewProps) {
               );
             })}
             {participants.length > 5 && (
-              <div className="w-7 h-7 rounded-full bg-layer-4 border-2 border-[#1a1a22] flex items-center justify-center">
-                <span className="text-[#80848E] text-2xs font-bold">+{participants.length - 5}</span>
+              <div className="w-7 h-7 rounded-full bg-layer-4 border-2 border-line flex items-center justify-center">
+                <span className="text-fg-3 text-2xs font-bold">+{participants.length - 5}</span>
               </div>
             )}
           </div>
           <button
             onClick={() => setChatOpen(!chatOpen)}
-            className={`p-1.5 rounded transition-colors cursor-pointer ${chatOpen ? 'bg-accent-500 text-white' : 'text-[#80848E] hover:text-white hover:bg-layer-4'
+            className={`p-1.5 rounded transition-colors cursor-pointer ${chatOpen ? 'bg-accent-500 text-on-primary' : 'text-fg-3 hover:text-on-primary hover:bg-layer-4'
               }`}
             title="Toggle chat"
           >
@@ -143,13 +143,13 @@ export default function VoiceCallView(_props: VoiceCallViewProps) {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setExpandedScreenId((prev) => (prev === id ? null : id)); }}
-                className="absolute top-2 right-2 p-1.5 rounded bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                className="absolute top-2 right-2 p-1.5 rounded bg-black/60 hover:bg-black/80 text-fg opacity-0 group-hover:opacity-100 transition-opacity z-10"
                 title={expandedScreenId === id ? 'Minimize' : 'Expand'}
               >
                 {expandedScreenId === id ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </button>
               <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/70 to-transparent">
-                <p className="text-[#f5f5f5] text-xs font-medium truncate">{label}</p>
+                <p className="text-fg text-xs font-medium truncate">{label}</p>
               </div>
             </div>
           );
@@ -164,11 +164,11 @@ export default function VoiceCallView(_props: VoiceCallViewProps) {
               >
                 <div className="w-full h-full flex flex-col p-4" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-white font-medium">{item.label}</span>
+                    <span className="text-fg font-medium">{item.label}</span>
                     <button
                       type="button"
                       onClick={() => setExpandedScreenId(null)}
-                      className="p-2 rounded bg-layer-4 hover:bg-layer-5 text-white"
+                      className="p-2 rounded bg-layer-4 hover:bg-layer-5 text-fg"
                       title="Minimize"
                     >
                       <Minimize2 className="w-5 h-5" />
@@ -286,7 +286,7 @@ export default function VoiceCallView(_props: VoiceCallViewProps) {
         })()}
 
         {/* Bottom controls */}
-        <div className="py-4 flex items-center justify-center gap-2 bg-[#1a1a22]/60 border-t border-white/5 shrink-0">
+        <div className="py-4 flex items-center justify-center gap-2 bg-surface/60 border-t border-line shrink-0">
           <ControlButton
             active={!muted}
             danger={muted}
@@ -336,15 +336,15 @@ export default function VoiceCallView(_props: VoiceCallViewProps) {
 
       {/* Chat sidebar */}
       {chatOpen && (
-        <div className="w-80 border-l border-white/5 bg-[#1a1a22] flex flex-col shrink-0">
-          <div className="h-12 px-4 flex items-center justify-between border-b border-white/5 shrink-0">
+        <div className="w-80 border-l border-line bg-surface flex flex-col shrink-0">
+          <div className="h-12 px-4 flex items-center justify-between border-b border-line shrink-0">
             <div className="flex items-center gap-2">
-              <Hash className="w-4 h-4 text-[#80848E]" />
-              <span className="text-white font-semibold text-sm">{channelName}</span>
+              <Hash className="w-4 h-4 text-fg-3" />
+              <span className="text-fg font-semibold text-sm">{channelName}</span>
             </div>
             <button
               onClick={() => setChatOpen(false)}
-              className="p-1 rounded text-[#80848E] hover:text-white hover:bg-layer-4 transition-colors cursor-pointer"
+              className="p-1 rounded text-fg-3 hover:text-fg hover:bg-layer-4 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -353,7 +353,7 @@ export default function VoiceCallView(_props: VoiceCallViewProps) {
           {/* Chat messages area */}
           <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-[#5C5F66] text-sm text-center">
+              <p className="text-fg-4 text-sm text-center">
                 Voice channel chat
                 <br />
                 <span className="text-2xs">Messages sent here are visible to everyone in the call</span>
@@ -362,17 +362,17 @@ export default function VoiceCallView(_props: VoiceCallViewProps) {
           </div>
 
           {/* Chat input */}
-          <div className="p-3 border-t border-white/5">
-            <div className="flex items-center gap-2 bg-[#0f0f12] rounded-lg px-3 py-2">
+          <div className="p-3 border-t border-line">
+            <div className="flex items-center gap-2 bg-rail rounded-lg px-3 py-2">
               <input
                 type="text"
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
                 placeholder={`Message #${channelName || 'voice'}`}
-                className="flex-1 bg-transparent text-[#B5BAC1] text-sm outline-none placeholder-[#5C5F66]"
+                className="flex-1 bg-transparent text-fg-2 text-sm outline-none placeholder-fg-4"
               />
               <button
-                className="text-[#80848E] hover:text-accent-400 transition-colors cursor-pointer"
+                className="text-fg-3 hover:text-accent-400 transition-colors cursor-pointer"
                 title="Send"
               >
                 <Send className="w-4 h-4" />
@@ -389,10 +389,10 @@ export default function VoiceCallView(_props: VoiceCallViewProps) {
 function VolumePopover({ volume, onChange }: { volume: number; onChange: (v: number) => void }) {
   return (
     <div
-      className="absolute left-0 top-full mt-1.5 z-50 w-48 p-3 rounded-lg bg-[#1e1e28] border border-white/10 shadow-xl"
+      className="absolute left-0 top-full mt-1.5 z-50 w-48 p-3 rounded-lg bg-surface-2 border border-line shadow-xl"
       onClick={(e) => e.stopPropagation()}
     >
-      <p className="text-[#B5BAC1] text-xs font-medium mb-2">Output volume</p>
+      <p className="text-fg-2 text-xs font-medium mb-2">Output volume</p>
       <input
         type="range"
         min={0}
@@ -402,7 +402,7 @@ function VolumePopover({ volume, onChange }: { volume: number; onChange: (v: num
         onChange={(e) => onChange(parseFloat(e.target.value))}
         className="w-full h-2 rounded-full appearance-none bg-layer-4 cursor-pointer accent-accent-500"
       />
-      <p className="text-[#80848E] text-2xs mt-1">{Math.round(volume * 100)}%</p>
+      <p className="text-fg-3 text-2xs mt-1">{Math.round(volume * 100)}%</p>
     </div>
   );
 }
@@ -455,7 +455,7 @@ function ScreenShareVideo({ stream, label, isRemote = false }: { stream: MediaSt
         title={label}
       />
       {isRemote && track?.muted && (
-        <span className="absolute inset-0 flex items-center justify-center text-[#80848E] text-sm">Waiting for video...</span>
+        <span className="absolute inset-0 flex items-center justify-center text-fg-3 text-sm">Waiting for video...</span>
       )}
     </div>
   );
@@ -572,7 +572,7 @@ function ParticipantTile({
 
   return (
     <div
-      className={`relative rounded-xl overflow-hidden bg-[#1e1e28] border-2 transition-all duration-200 min-h-0 ${fillCell ? 'h-full w-full' : 'aspect-video'} ${isSpeaking
+      className={`relative rounded-xl overflow-hidden bg-surface-2 border-2 transition-all duration-200 min-h-0 ${fillCell ? 'h-full w-full' : 'aspect-video'} ${isSpeaking
         ? 'border-online shadow-lg shadow-online/20'
         : 'border-transparent'
         }`}
@@ -594,7 +594,7 @@ function ParticipantTile({
             {avatar ? (
               <img src={avatar} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-white text-xl font-bold">
+              <span className="text-fg text-xl font-bold">
                 {displayName.charAt(0).toUpperCase()}
               </span>
             )}
@@ -605,11 +605,11 @@ function ParticipantTile({
       {/* Name label */}
       <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/70 to-transparent">
         <div className="flex items-center gap-2">
-          <span className="text-white text-sm font-medium truncate">
+          <span className="text-fg text-sm font-medium truncate">
             {displayName}
           </span>
           {isOwner && (
-            <span className="px-1.5 py-0.5 rounded-sm bg-accent-500 text-white text-2xs font-bold uppercase">
+            <span className="px-1.5 py-0.5 rounded-sm bg-accent-500 text-on-primary text-2xs font-bold uppercase">
               Host
             </span>
           )}
@@ -621,12 +621,12 @@ function ParticipantTile({
         <div className="absolute top-2 right-2 flex gap-1">
           {muted && (
             <div className="w-6 h-6 rounded-full bg-danger-500/80 flex items-center justify-center backdrop-blur-sm">
-              <MicOff className="w-3 h-3 text-white" />
+              <MicOff className="w-3 h-3 text-fg" />
             </div>
           )}
           {deafened && (
             <div className="w-6 h-6 rounded-full bg-danger-500/80 flex items-center justify-center backdrop-blur-sm">
-              <HeadphoneOff className="w-3 h-3 text-white" />
+              <HeadphoneOff className="w-3 h-3 text-fg" />
             </div>
           )}
         </div>
@@ -662,12 +662,12 @@ function ControlButton({
       onClick={onClick}
       disabled={disabled}
       className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all ${disabled
-        ? 'bg-[#2a2a35] text-[#5C5F66] cursor-not-allowed opacity-50'
+        ? 'bg-raised text-fg-4 cursor-not-allowed opacity-50'
         : danger
           ? 'bg-danger-500/20 text-danger-400 hover:bg-danger-500/30'
           : active
-            ? 'bg-[#2a2a35] text-white hover:bg-[#35354a]'
-            : 'bg-[#2a2a35] text-[#80848E] hover:bg-[#35354a] hover:text-white'
+            ? 'bg-raised text-fg hover:bg-line-strong'
+            : 'bg-raised text-fg-3 hover:bg-line-strong hover:text-fg'
         }`}
       title={title}
     >

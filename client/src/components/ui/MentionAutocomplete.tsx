@@ -28,7 +28,7 @@ function statusColor(status?: string): string {
     case 'online': return 'bg-online';
     case 'idle': return 'bg-idle';
     case 'dnd': return 'bg-dnd';
-    default: return 'bg-[#80848E]';
+    default: return 'bg-fg-4';
   }
 }
 
@@ -197,7 +197,7 @@ export default function MentionAutocomplete({
       }}
     >
       <div className="px-3 py-2 shrink-0 border-b border-layer-4">
-        <p className="text-[#80848E] text-2xs font-bold uppercase tracking-wider truncate">
+        <p className="text-fg-3 text-2xs font-bold uppercase tracking-wider truncate">
           {headerLabel}
         </p>
       </div>
@@ -223,7 +223,7 @@ export default function MentionAutocomplete({
                   {opt.user.avatar ? (
                     <img src={opt.user.avatar} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-white text-xs font-bold">
+                    <span className="text-fg text-xs font-bold">
                       {opt.user.displayName?.charAt(0)?.toUpperCase() ?? '?'}
                     </span>
                   )}
@@ -232,10 +232,10 @@ export default function MentionAutocomplete({
                   />
                 </div>
                 <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
-                  <span className="text-white text-sm font-medium truncate">
+                  <span className="text-fg text-sm font-medium truncate">
                     {opt.user.displayName || opt.user.username}
                   </span>
-                  <span className="text-[#80848E] text-xs truncate shrink-0">
+                  <span className="text-fg-3 text-xs truncate shrink-0">
                     @{opt.user.username}
                   </span>
                 </div>
@@ -243,21 +243,21 @@ export default function MentionAutocomplete({
             ) : opt.type === 'everyone' ? (
               <>
                 <div className="w-8 h-8 rounded-full bg-accent-600 flex items-center justify-center shrink-0">
-                  <span className="text-white text-xs font-bold">@</span>
+                  <span className="text-fg text-xs font-bold">@</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-accent-400 text-sm font-medium">@everyone</p>
-                  <p className="text-[#80848E] text-xs">Notify everyone who can view this channel.</p>
+                  <p className="text-fg-3 text-xs">Notify everyone who can view this channel.</p>
                 </div>
               </>
             ) : opt.type === 'here' ? (
               <>
                 <div className="w-8 h-8 rounded-full bg-accent-600 flex items-center justify-center shrink-0">
-                  <span className="text-white text-xs font-bold">@</span>
+                  <span className="text-fg text-xs font-bold">@</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-accent-400 text-sm font-medium">@here</p>
-                  <p className="text-[#80848E] text-xs">Notify online members who can view this channel.</p>
+                  <p className="text-fg-3 text-xs">Notify online members who can view this channel.</p>
                 </div>
               </>
             ) : (
@@ -274,7 +274,7 @@ export default function MentionAutocomplete({
                   <p className="text-sm font-medium truncate" style={{ color: opt.role.color }}>
                     @{opt.role.name}
                   </p>
-                  <p className="text-[#80848E] text-xs">Notify users with this role.</p>
+                  <p className="text-fg-3 text-xs">Notify users with this role.</p>
                 </div>
               </>
             )}

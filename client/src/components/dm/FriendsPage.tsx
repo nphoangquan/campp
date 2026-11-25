@@ -149,7 +149,7 @@ export default function FriendsPage({ onOpenDM }: Props) {
     : filteredFriends;
 
   const statusColor: Record<string, string> = {
-    online: 'bg-online', idle: 'bg-idle', dnd: 'bg-dnd', offline: 'bg-[#80848E]', invisible: 'bg-[#80848E]',
+    online: 'bg-online', idle: 'bg-idle', dnd: 'bg-dnd', offline: 'bg-fg-4', invisible: 'bg-fg-4',
   };
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
@@ -163,8 +163,8 @@ export default function FriendsPage({ onOpenDM }: Props) {
     <div className="flex-1 flex flex-col bg-layer-2 overflow-hidden">
       {/* Header */}
       <div className="h-12 px-4 flex items-center gap-4 border-b border-layer-4 shrink-0">
-        <div className="flex items-center gap-2 text-white font-semibold flex-1 min-w-0">
-          <UserPlus className="w-5 h-5 text-[#80848E] shrink-0" />
+        <div className="flex items-center gap-2 text-fg font-semibold flex-1 min-w-0">
+          <UserPlus className="w-5 h-5 text-fg-3 shrink-0" />
           Friends
         </div>
         <div className="w-px h-6 bg-layer-5 shrink-0" />
@@ -174,13 +174,13 @@ export default function FriendsPage({ onOpenDM }: Props) {
             onClick={() => setTab(t.key)}
             className={`px-3 py-1 rounded text-sm font-medium cursor-pointer transition-colors ${
               tab === t.key
-                ? t.key === 'add' ? 'bg-online text-white' : 'bg-layer-4 text-white'
-                : 'text-[#B5BAC1] hover:text-white hover:bg-layer-3'
+                ? t.key === 'add' ? 'bg-online text-white' : 'bg-layer-4 text-fg'
+                : 'text-fg-2 hover:text-fg hover:bg-layer-3'
             }`}
           >
             {t.label}
             {t.count !== undefined && t.count > 0 && (
-              <span className="ml-1.5 bg-layer-5 text-[#B5BAC1] text-2xs px-1.5 py-0.5 rounded-full">{t.count}</span>
+              <span className="ml-1.5 bg-layer-5 text-fg-2 text-2xs px-1.5 py-0.5 rounded-full">{t.count}</span>
             )}
           </button>
         ))}
@@ -193,8 +193,8 @@ export default function FriendsPage({ onOpenDM }: Props) {
         {/* Add Friend tab */}
         {tab === 'add' && (
           <div className="p-6">
-            <h3 className="text-white font-bold text-sm uppercase tracking-wider mb-1">Add Friend</h3>
-            <p className="text-[#80848E] text-sm mb-4">You can add friends with their username. Search as you type or send a request directly.</p>
+            <h3 className="text-fg font-bold text-sm uppercase tracking-wider mb-1">Add Friend</h3>
+            <p className="text-fg-3 text-sm mb-4">You can add friends with their username. Search as you type or send a request directly.</p>
 
             <div className="flex gap-2 mb-6">
               <div className="flex-1 relative">
@@ -208,28 +208,28 @@ export default function FriendsPage({ onOpenDM }: Props) {
                     if (e.key === 'Enter') handleSendByUsername();
                   }}
                 />
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#80848E]" />
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-3" />
               </div>
               <button
                 onClick={handleSendByUsername}
                 disabled={!addUsername.trim() || sendingUsername}
-                className="bg-accent-500 hover:bg-accent-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-6 py-2 rounded cursor-pointer transition-colors"
+                className="bg-accent-500 hover:bg-accent-400 disabled:opacity-50 disabled:cursor-not-allowed text-on-primary text-sm font-medium px-6 py-2 rounded cursor-pointer transition-colors"
               >
                 {sendingUsername ? 'Sending...' : 'Send Friend Request'}
               </button>
             </div>
 
             {searching && addUsername.trim() && (
-              <p className="text-[#80848E] text-xs mb-2">Searching...</p>
+              <p className="text-fg-3 text-xs mb-2">Searching...</p>
             )}
 
             {!searching && addUsername.trim() && searchResults.length === 0 && (
-              <p className="text-[#80848E] text-sm">No users found. Try a different username.</p>
+              <p className="text-fg-3 text-sm">No users found. Try a different username.</p>
             )}
 
             {searchResults.length > 0 && (
               <div className="space-y-1">
-                <p className="text-[#80848E] text-2xs font-bold uppercase tracking-wider mb-2">Search results</p>
+                <p className="text-fg-3 text-2xs font-bold uppercase tracking-wider mb-2">Search results</p>
                 {searchResults.map((u) => {
                   const isFriend = friends.some((f) => f._id === u._id);
                   const isPending = outgoing.some((f) => f._id === u._id);
@@ -240,23 +240,23 @@ export default function FriendsPage({ onOpenDM }: Props) {
                           {u.avatar ? (
                             <img src={u.avatar} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <span className="text-white text-sm font-bold">{u.displayName.charAt(0).toUpperCase()}</span>
+                            <span className="text-fg text-sm font-bold">{u.displayName.charAt(0).toUpperCase()}</span>
                           )}
                         </div>
                         <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 ${statusColor[u.status]} border-[2.5px] border-layer-2 rounded-full`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className="text-white text-sm font-medium">{u.displayName}</span>
-                        <span className="text-[#80848E] text-xs ml-1.5">@{u.username}</span>
+                        <span className="text-fg text-sm font-medium">{u.displayName}</span>
+                        <span className="text-fg-3 text-xs ml-1.5">@{u.username}</span>
                       </div>
                       {isFriend ? (
                         <span className="text-online text-xs font-medium">Already friends</span>
                       ) : isPending ? (
-                        <span className="text-[#80848E] text-xs font-medium">Request sent</span>
+                        <span className="text-fg-3 text-xs font-medium">Request sent</span>
                       ) : (
                         <button
                           onClick={() => handleSendRequest(u._id)}
-                          className="bg-accent-500 hover:bg-accent-400 text-white text-xs font-medium px-3 py-1.5 rounded cursor-pointer transition-colors"
+                          className="bg-accent-500 hover:bg-accent-400 text-on-primary text-xs font-medium px-3 py-1.5 rounded cursor-pointer transition-colors"
                         >
                           Send Request
                         </button>
@@ -274,7 +274,7 @@ export default function FriendsPage({ onOpenDM }: Props) {
           <div className="p-4">
             {incoming.length > 0 && (
               <>
-                <p className="text-[#80848E] text-2xs font-bold uppercase tracking-wider px-2 mb-2">
+                <p className="text-fg-3 text-2xs font-bold uppercase tracking-wider px-2 mb-2">
                   Incoming &mdash; {incoming.length}
                 </p>
                 <div className="space-y-0.5 mb-4">
@@ -284,12 +284,12 @@ export default function FriendsPage({ onOpenDM }: Props) {
                         {u.avatar ? (
                           <img src={u.avatar} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-white text-sm font-bold">{u.displayName.charAt(0).toUpperCase()}</span>
+                          <span className="text-fg text-sm font-bold">{u.displayName.charAt(0).toUpperCase()}</span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className="text-white text-sm font-medium">{u.displayName}</span>
-                        <p className="text-[#80848E] text-xs">Incoming Friend Request</p>
+                        <span className="text-fg text-sm font-medium">{u.displayName}</span>
+                        <p className="text-fg-3 text-xs">Incoming Friend Request</p>
                       </div>
                       <div className="flex gap-1.5">
                         <button
@@ -297,14 +297,14 @@ export default function FriendsPage({ onOpenDM }: Props) {
                           className="w-9 h-9 rounded-full bg-layer-4 hover:bg-online flex items-center justify-center cursor-pointer transition-colors"
                           title="Accept"
                         >
-                          <Check className="w-4 h-4 text-[#B5BAC1]" />
+                          <Check className="w-4 h-4 text-fg-2" />
                         </button>
                         <button
                           onClick={() => handleDecline(u._id)}
                           className="w-9 h-9 rounded-full bg-layer-4 hover:bg-danger-500 flex items-center justify-center cursor-pointer transition-colors"
                           title="Decline"
                         >
-                          <X className="w-4 h-4 text-[#B5BAC1]" />
+                          <X className="w-4 h-4 text-fg-2" />
                         </button>
                       </div>
                     </div>
@@ -315,7 +315,7 @@ export default function FriendsPage({ onOpenDM }: Props) {
 
             {outgoing.length > 0 && (
               <>
-                <p className="text-[#80848E] text-2xs font-bold uppercase tracking-wider px-2 mb-2">
+                <p className="text-fg-3 text-2xs font-bold uppercase tracking-wider px-2 mb-2">
                   Outgoing &mdash; {outgoing.length}
                 </p>
                 <div className="space-y-0.5">
@@ -325,19 +325,19 @@ export default function FriendsPage({ onOpenDM }: Props) {
                         {u.avatar ? (
                           <img src={u.avatar} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-white text-sm font-bold">{u.displayName.charAt(0).toUpperCase()}</span>
+                          <span className="text-fg text-sm font-bold">{u.displayName.charAt(0).toUpperCase()}</span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className="text-white text-sm font-medium">{u.displayName}</span>
-                        <p className="text-[#80848E] text-xs">Outgoing Friend Request</p>
+                        <span className="text-fg text-sm font-medium">{u.displayName}</span>
+                        <p className="text-fg-3 text-xs">Outgoing Friend Request</p>
                       </div>
                       <button
                         onClick={() => handleCancel(u._id)}
                         className="w-9 h-9 rounded-full bg-layer-4 hover:bg-danger-500 flex items-center justify-center cursor-pointer transition-colors"
                         title="Cancel"
                       >
-                        <X className="w-4 h-4 text-[#B5BAC1]" />
+                        <X className="w-4 h-4 text-fg-2" />
                       </button>
                     </div>
                   ))}
@@ -347,7 +347,7 @@ export default function FriendsPage({ onOpenDM }: Props) {
 
             {incoming.length === 0 && outgoing.length === 0 && (
               <div className="text-center py-16">
-                <p className="text-[#80848E] text-sm">No pending friend requests</p>
+                <p className="text-fg-3 text-sm">No pending friend requests</p>
               </div>
             )}
           </div>
@@ -365,11 +365,11 @@ export default function FriendsPage({ onOpenDM }: Props) {
                   className="input text-sm pl-9"
                   placeholder="Search friends"
                 />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#80848E]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-3" />
               </div>
             </div>
 
-            <p className="text-[#80848E] text-2xs font-bold uppercase tracking-wider px-2 mb-2">
+            <p className="text-fg-3 text-2xs font-bold uppercase tracking-wider px-2 mb-2">
               {tab === 'online' ? 'Online' : 'All Friends'} &mdash; {displayFriends.length}
             </p>
 
@@ -381,14 +381,14 @@ export default function FriendsPage({ onOpenDM }: Props) {
                       {friend.avatar ? (
                         <img src={friend.avatar} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-white text-sm font-bold">{friend.displayName.charAt(0).toUpperCase()}</span>
+                        <span className="text-fg text-sm font-bold">{friend.displayName.charAt(0).toUpperCase()}</span>
                       )}
                     </div>
                     <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 ${statusColor[friend.status]} border-[2.5px] border-layer-2 rounded-full`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-white text-sm font-medium">{friend.displayName}</span>
-                    <p className="text-[#80848E] text-xs capitalize">{friend.status}</p>
+                    <span className="text-fg text-sm font-medium">{friend.displayName}</span>
+                    <p className="text-fg-3 text-xs capitalize">{friend.status}</p>
                   </div>
                   <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
@@ -396,14 +396,14 @@ export default function FriendsPage({ onOpenDM }: Props) {
                       className="w-9 h-9 rounded-full bg-layer-4 hover:bg-layer-5 flex items-center justify-center cursor-pointer transition-colors"
                       title="Message"
                     >
-                      <MessageSquare className="w-4 h-4 text-[#B5BAC1]" />
+                      <MessageSquare className="w-4 h-4 text-fg-2" />
                     </button>
                     <button
                       onClick={() => handleRemove(friend._id)}
                       className="w-9 h-9 rounded-full bg-layer-4 hover:bg-danger-500 flex items-center justify-center cursor-pointer transition-colors"
                       title="Remove Friend"
                     >
-                      <UserMinus className="w-4 h-4 text-[#B5BAC1]" />
+                      <UserMinus className="w-4 h-4 text-fg-2" />
                     </button>
                   </div>
                 </div>
@@ -411,7 +411,7 @@ export default function FriendsPage({ onOpenDM }: Props) {
 
               {displayFriends.length === 0 && (
                 <div className="text-center py-16">
-                  <p className="text-[#80848E] text-sm">
+                  <p className="text-fg-3 text-sm">
                     {tab === 'online' ? 'No friends are online right now.' : 'No friends yet. Add some!'}
                   </p>
                 </div>

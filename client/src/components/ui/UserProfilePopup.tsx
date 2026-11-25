@@ -35,8 +35,8 @@ const statusColor: Record<string, string> = {
   online: 'bg-online',
   idle: 'bg-idle',
   dnd: 'bg-dnd',
-  offline: 'bg-[#80848E]',
-  invisible: 'bg-[#80848E]',
+  offline: 'bg-fg-4',
+  invisible: 'bg-fg-4',
 };
 
 export default function UserProfilePopup({ user, onClose, onOpenDM, onAddFriend, isServerOwner }: Props) {
@@ -115,19 +115,19 @@ export default function UserProfilePopup({ user, onClose, onOpenDM, onAddFriend,
               {user.avatar ? (
                 <img src={user.avatar} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-white text-2xl font-bold">
+                <span className="text-fg text-2xl font-bold">
                   {user.displayName?.charAt(0).toUpperCase() || '?'}
                 </span>
               )}
             </div>
             <div
-              className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-[3px] border-layer-1 ${statusColor[user.status] || 'bg-[#80848E]'}`}
+              className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-[3px] border-layer-1 ${statusColor[user.status] || 'bg-fg-4'}`}
             />
           </div>
         </div>
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/40 flex items-center justify-center text-white hover:bg-black/60 cursor-pointer transition-colors"
+          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/40 flex items-center justify-center text-fg hover:bg-black/60 cursor-pointer transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
@@ -136,25 +136,25 @@ export default function UserProfilePopup({ user, onClose, onOpenDM, onAddFriend,
       <div className="flex-1 overflow-y-auto pt-14 px-5 pb-5">
         {user.activityStatus && (
           <div className="mb-4 px-3 py-2 rounded-lg bg-layer-3/80 border border-layer-5">
-            <p className="text-[#B5BAC1] text-sm truncate">{user.activityStatus}</p>
+            <p className="text-fg-2 text-sm truncate">{user.activityStatus}</p>
           </div>
         )}
 
         <div className="flex items-center gap-2 mb-1">
-          <h3 className="text-white font-bold text-xl truncate">{user.displayName}</h3>
+          <h3 className="text-fg font-bold text-xl truncate">{user.displayName}</h3>
           {isServerOwner && (
             <span className="shrink-0 px-2 py-0.5 rounded-md text-xs font-semibold bg-idle/20 text-idle">
               Owner
             </span>
           )}
         </div>
-        <p className="text-[#80848E] text-sm mb-5">@{user.username}</p>
+        <p className="text-fg-3 text-sm mb-5">@{user.username}</p>
 
         <div className="space-y-2">
           {isSelf ? (
             <button
               onClick={handleEditProfile}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-accent-500 hover:bg-accent-400 text-white font-medium text-sm cursor-pointer transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-accent-500 hover:bg-accent-400 text-on-primary font-medium text-sm cursor-pointer transition-colors"
             >
               <Pencil className="w-4 h-4" />
               Edit Profile
@@ -163,7 +163,7 @@ export default function UserProfilePopup({ user, onClose, onOpenDM, onAddFriend,
             <>
               <button
                 onClick={handleMessage}
-                className="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg bg-layer-3 hover:bg-layer-4 text-[#B5BAC1] hover:text-white cursor-pointer transition-colors text-sm"
+                className="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg bg-layer-3 hover:bg-layer-4 text-fg-2 hover:text-fg cursor-pointer transition-colors text-sm"
               >
                 <MessageSquare className="w-4 h-4" />
                 Message
@@ -171,7 +171,7 @@ export default function UserProfilePopup({ user, onClose, onOpenDM, onAddFriend,
               {!isFriend && (
                 <button
                   onClick={handleAddFriend}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg bg-layer-3 hover:bg-layer-4 text-[#B5BAC1] hover:text-white cursor-pointer transition-colors text-sm"
+                  className="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg bg-layer-3 hover:bg-layer-4 text-fg-2 hover:text-fg cursor-pointer transition-colors text-sm"
                 >
                   <UserPlus className="w-4 h-4" />
                   Add Friend

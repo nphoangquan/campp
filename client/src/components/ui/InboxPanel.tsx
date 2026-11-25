@@ -99,15 +99,15 @@ export default function InboxPanel({ anchorRef, onClose }: Props) {
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-layer-4 shrink-0">
         <div className="flex items-center gap-2">
-          <Bell className="w-5 h-5 text-[#80848E]" />
-          <span className="text-white font-semibold text-base">Inbox</span>
+          <Bell className="w-5 h-5 text-fg-3" />
+          <span className="text-fg font-semibold text-base">Inbox</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-[#80848E] text-sm">{unreadCount}</span>
+          <span className="text-fg-3 text-sm">{unreadCount}</span>
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllRead}
-              className="p-1.5 rounded text-[#80848E] hover:text-white hover:bg-layer-4 transition-colors cursor-pointer"
+              className="p-1.5 rounded text-fg-3 hover:text-fg hover:bg-layer-4 transition-colors cursor-pointer"
               title="Mark all as read"
             >
               <Check className="w-4 h-4" />
@@ -115,7 +115,7 @@ export default function InboxPanel({ anchorRef, onClose }: Props) {
           )}
           <button
             onClick={handleOpenNotificationSettings}
-            className="p-1.5 rounded text-[#80848E] hover:text-white hover:bg-layer-4 transition-colors cursor-pointer"
+            className="p-1.5 rounded text-fg-3 hover:text-fg hover:bg-layer-4 transition-colors cursor-pointer"
             title="Notification settings"
           >
             <Settings className="w-4 h-4" />
@@ -130,8 +130,8 @@ export default function InboxPanel({ anchorRef, onClose }: Props) {
             onClick={() => setTab(t)}
             className={`flex-1 py-2.5 text-sm font-medium cursor-pointer transition-colors ${
               tab === t
-                ? 'text-white border-b-2 border-accent-500'
-                : 'text-[#80848E] hover:text-white hover:bg-layer-3'
+                ? 'text-fg border-b-2 border-accent-500'
+                : 'text-fg-3 hover:text-fg hover:bg-layer-3'
             }`}
           >
             {t === 'for-you' ? 'For You' : t === 'unreads' ? 'Unreads' : 'Mentions'}
@@ -141,16 +141,16 @@ export default function InboxPanel({ anchorRef, onClose }: Props) {
 
       <div className="flex-1 overflow-y-auto min-h-[200px]">
         {loading ? (
-          <div className="p-6 text-center text-[#80848E] text-sm">Loading...</div>
+          <div className="p-6 text-center text-fg-3 text-sm">Loading...</div>
         ) : tab === 'for-you' ? (
           <div className="p-8 text-center">
-            <p className="text-[#80848E] text-sm">Nothing here yet</p>
-            <p className="text-[#80848E] text-xs mt-1">Come back for notifications on events and more.</p>
+            <p className="text-fg-3 text-sm">Nothing here yet</p>
+            <p className="text-fg-3 text-xs mt-1">Come back for notifications on events and more.</p>
           </div>
         ) : tab === 'unreads' ? (
           notifications.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="text-[#80848E] text-sm">You are all caught up</p>
+              <p className="text-fg-3 text-sm">You are all caught up</p>
             </div>
           ) : (
             <div className="py-2">
@@ -161,15 +161,15 @@ export default function InboxPanel({ anchorRef, onClose }: Props) {
                       {n.authorId?.avatar ? (
                         <img src={n.authorId.avatar} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-white text-sm font-bold">
+                        <span className="text-fg text-sm font-bold">
                           {n.authorId?.displayName?.charAt(0)?.toUpperCase() ?? '?'}
                         </span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm">
+                      <p className="text-fg text-sm">
                         <span className="font-medium">{n.authorId?.displayName ?? 'Someone'}</span>
-                        <span className="text-[#80848E]">
+                        <span className="text-fg-3">
                           {' '}
                           {n.type === 'everyone'
                             ? 'mentioned @everyone'
@@ -177,16 +177,16 @@ export default function InboxPanel({ anchorRef, onClose }: Props) {
                               ? 'mentioned @here'
                               : 'mentioned you'}{' '}
                         </span>
-                        <span className="text-[#80848E]">in</span>
+                        <span className="text-fg-3">in</span>
                         <span className="text-accent-400">
                           {' '}
                           #{typeof n.channelId === 'object' ? n.channelId?.name : 'channel'}
                         </span>
                         {n.serverId && typeof n.serverId === 'object' && (
-                          <span className="text-[#80848E]"> in {n.serverId.name}</span>
+                          <span className="text-fg-3"> in {n.serverId.name}</span>
                         )}
                       </p>
-                      <p className="text-[#80848E] text-xs mt-0.5">
+                      <p className="text-fg-3 text-xs mt-0.5">
                         {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                       </p>
                       {(typeof n.serverId === 'object' ? n.serverId?._id : n.serverId) &&
@@ -206,7 +206,7 @@ export default function InboxPanel({ anchorRef, onClose }: Props) {
           )
         ) : notifications.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-[#80848E] text-sm">No mentions yet</p>
+            <p className="text-fg-3 text-sm">No mentions yet</p>
           </div>
         ) : (
           <div className="py-2">
@@ -220,28 +220,28 @@ export default function InboxPanel({ anchorRef, onClose }: Props) {
                     {n.authorId?.avatar ? (
                       <img src={n.authorId.avatar} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-white text-sm font-bold">
+                      <span className="text-fg text-sm font-bold">
                         {n.authorId?.displayName?.charAt(0)?.toUpperCase() ?? '?'}
                       </span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm">
+                    <p className="text-fg text-sm">
                       <span className="font-medium">{n.authorId?.displayName ?? 'Someone'}</span>
-                      <span className="text-[#80848E]">
+                      <span className="text-fg-3">
                         {' '}
                         {n.type === 'everyone' ? 'mentioned @everyone' : 'mentioned you'}{' '}
                       </span>
-                      <span className="text-[#80848E]">in</span>
+                      <span className="text-fg-3">in</span>
                       <span className="text-accent-400">
                         {' '}
                         #{typeof n.channelId === 'object' ? n.channelId?.name : 'channel'}
                       </span>
                       {n.serverId && typeof n.serverId === 'object' && (
-                        <span className="text-[#80848E]"> in {n.serverId.name}</span>
+                        <span className="text-fg-3"> in {n.serverId.name}</span>
                       )}
                     </p>
-                    <p className="text-[#80848E] text-xs mt-0.5">
+                    <p className="text-fg-3 text-xs mt-0.5">
                       {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                     </p>
                     {(typeof n.serverId === 'object' ? n.serverId?._id : n.serverId) &&

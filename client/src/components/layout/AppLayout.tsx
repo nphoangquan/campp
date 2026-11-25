@@ -28,6 +28,8 @@ import type { Message, DirectMessage } from '../../types';
 type AppView = 'server' | 'dm';
 type DMSubView = 'friends' | 'conversation';
 
+import { useActivityStore } from '../../stores/useActivityStore';
+
 export default function AppLayout() {
   const { serverId: urlServerId, channelId: urlChannelId, conversationId: urlConversationId } = useParams<{ serverId?: string; channelId?: string; conversationId?: string }>();
   const navigate = useNavigate();
@@ -134,6 +136,16 @@ export default function AppLayout() {
         }
       } else if (message.channelId && serverStore.currentServer) {
         serverStore.incrementUnread(message.channelId);
+        const allCh = [...serverStore.uncategorizedChannels, ...serverStore.categories.flatMap((c) => c.channels || [])];
+        const where = allCh.find((c) => c._id === message.channelId);
+        if (where && message.authorId._id !== authStore.user?._id) {
+          useActivityStore.getState().push({
+            kind: 'message',
+            userId: message.authorId._id,
+            name: (message.authorId as { displayName?: string }).displayName || 'Someone',
+            place: where.name,
+          });
+        }
         const meId = authStore.user?._id;
         const isMentioned = (message.mentions ?? []).some((id) => id === meId || (typeof id === 'object' && (id as { _id?: string })?._id === meId));
         if (message.authorId._id !== meId && isMentioned && document.visibilityState === 'hidden') {
@@ -156,6 +168,11 @@ export default function AppLayout() {
     });
 
     socket.on('userStatusChanged', ({ userId, status }: { userId: string; status: string }) => {
+      const before = useServerStore.getState().members.find((m) => m._id === userId);
+      if (before && before.status !== status && userId !== useAuthStore.getState().user?._id) {
+        const kind = status === 'idle' ? 'idle' : status === 'offline' || status === 'invisible' ? 'offline' : 'online';
+        useActivityStore.getState().push({ kind, userId, name: before.displayName || before.username });
+      }
       useServerStore.getState().updateMemberStatus(userId, status);
       useDMStore.getState().updateParticipantStatus(userId, status);
       if (userId === useAuthStore.getState().user?._id) {
@@ -176,6 +193,19 @@ export default function AppLayout() {
     });
 
     socket.on('voiceStateUpdate', (data: { channelId: string; users: VoiceUser[] }) => {
+      const prevUsers = useVoiceStore.getState().voiceStates[data.channelId] ?? [];
+      const ss = useServerStore.getState();
+      const room = [...ss.uncategorizedChannels, ...ss.categories.flatMap((c) => c.channels || [])].find((c) => c._id === data.channelId);
+      if (room) {
+        const nameOf = (uid: string) => {
+          const m = ss.members.find((x) => x._id === uid);
+          return m?.displayName || m?.username || 'Someone';
+        };
+        const prevIds = new Set(prevUsers.map((u) => u.userId));
+        const nextIds = new Set(data.users.map((u) => u.userId));
+        for (const u of data.users) if (!prevIds.has(u.userId)) useActivityStore.getState().push({ kind: 'voice-join', userId: u.userId, name: nameOf(u.userId), place: room.name });
+        for (const u of prevUsers) if (!nextIds.has(u.userId)) useActivityStore.getState().push({ kind: 'voice-leave', userId: u.userId, name: nameOf(u.userId), place: room.name });
+      }
       useVoiceStore.getState().updateVoiceState(data.channelId, data.users);
     });
 
@@ -406,6 +436,13 @@ export default function AppLayout() {
     navigate('/channels/@me');
   };
 
+  const [membersVisible, setMembersVisible] = useState(() => localStorage.getItem('camp-members') !== 'hidden');
+  const toggleMembers = () =>
+    setMembersVisible((v) => {
+      localStorage.setItem('camp-members', v ? 'hidden' : 'shown');
+      return !v;
+    });
+
   const handleLogout = async () => {
     disconnectSocket();
     try {
@@ -444,7 +481,7 @@ export default function AppLayout() {
                   <button
                     type="button"
                     onClick={() => setVoicePanelMode('dock')}
-                    className="fixed bottom-4 right-4 z-50 bg-layer-3 border border-white/10 text-white px-3 py-2 rounded-full shadow-xl hover:bg-layer-4 cursor-pointer flex items-center gap-2"
+                    className="fixed bottom-4 right-4 z-50 bg-layer-3 border border-line text-fg px-3 py-2 rounded-[2px] hover:bg-layer-4 cursor-pointer flex items-center gap-2"
                     title="Minimize"
                   >
                     <span className="w-2 h-2 rounded-full bg-online" />
@@ -453,8 +490,12 @@ export default function AppLayout() {
                 </div>
               ) : (
                 <>
-                  <ChatArea onOpenDM={(id: string) => navigate(`/channels/@me/${id}`)} />
-                  {currentServer && <MemberList onOpenDM={(id: string) => navigate(`/channels/@me/${id}`)} />}
+                  <ChatArea
+                    onOpenDM={(id: string) => navigate(`/channels/@me/${id}`)}
+                    membersOpen={membersVisible}
+                    onToggleMembers={toggleMembers}
+                  />
+                  {currentServer && membersVisible && <MemberList onOpenDM={(id: string) => navigate(`/channels/@me/${id}`)} />}
                 </>
               )}
 
@@ -466,7 +507,7 @@ export default function AppLayout() {
                     <button
                       type="button"
                       onClick={() => setVoicePanelMode('center')}
-                      className="bg-layer-3 border border-white/10 text-white px-3 py-2 rounded-full shadow-xl hover:bg-layer-4 cursor-pointer flex items-center gap-2"
+                      className="bg-layer-3 border border-line text-fg px-3 py-2 rounded-[2px] hover:bg-layer-4 cursor-pointer flex items-center gap-2"
                       title="Open voice"
                     >
                       <span className="w-2 h-2 rounded-full bg-online" />
@@ -476,16 +517,16 @@ export default function AppLayout() {
 
                   {/* Dock (corner) */}
                   {voicePanelMode === 'dock' && (
-                    <div className="w-[420px] h-[520px] bg-layer-2 rounded-xl shadow-2xl border border-white/10 overflow-hidden">
-                      <div className="h-10 px-3 flex items-center justify-between bg-layer-3 border-b border-white/10">
-                        <div className="text-[#B5BAC1] text-sm truncate">
-                          Voice: <span className="text-white font-medium">{voiceChannelName || 'Voice Channel'}</span>
+                    <div className="w-[420px] h-[520px] bg-surface rounded-[2px] border border-line-strong overflow-hidden">
+                      <div className="h-10 px-3 flex items-center justify-between bg-layer-3 border-b border-line">
+                        <div className="text-fg-2 text-sm truncate">
+                          Voice: <span className="text-fg font-medium">{voiceChannelName || 'Voice Channel'}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => setVoicePanelMode('center')}
-                            className="text-[#80848E] hover:text-white text-sm px-2 py-1 rounded hover:bg-layer-4 cursor-pointer"
+                            className="text-fg-3 hover:text-fg text-sm px-2 py-1 rounded hover:bg-layer-4 cursor-pointer"
                             title="Expand"
                           >
                             Expand
@@ -493,7 +534,7 @@ export default function AppLayout() {
                           <button
                             type="button"
                             onClick={() => setVoicePanelMode('bubble')}
-                            className="text-[#80848E] hover:text-white text-sm px-2 py-1 rounded hover:bg-layer-4 cursor-pointer"
+                            className="text-fg-3 hover:text-fg text-sm px-2 py-1 rounded hover:bg-layer-4 cursor-pointer"
                             title="Minimize"
                           >
                             Minimize
@@ -522,7 +563,7 @@ export default function AppLayout() {
                 aria-hidden="true"
               />
               <div
-                className={`absolute left-[72px] top-0 bottom-0 w-60 bg-layer-1 flex flex-col z-50 shadow-xl transition-transform duration-200 ${channelSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`absolute left-[72px] top-0 bottom-0 w-60 bg-layer-1 flex flex-col z-50 border-r border-line-strong transition-transform duration-200 ${channelSidebarOpen ? 'translate-x-0' : '-translate-x-full'
                   }`}
                 role="navigation"
                 aria-label="Channel list"
@@ -555,7 +596,7 @@ export default function AppLayout() {
                   aria-hidden="true"
                 />
                 <div
-                  className={`absolute right-0 top-0 bottom-0 w-60 bg-layer-1 z-50 shadow-xl transition-transform duration-200 ${memberListOpen ? 'translate-x-0' : 'translate-x-full'
+                  className={`absolute right-0 top-0 bottom-0 w-60 bg-layer-1 z-50 border-l border-line-strong transition-transform duration-200 ${memberListOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}
                   role="complementary"
                   aria-label="Member list"
@@ -587,12 +628,12 @@ export default function AppLayout() {
           ) : (
             <div className="flex-1 flex flex-col bg-layer-2">
               <div className="h-12 px-4 flex items-center gap-3 border-b border-layer-4 shrink-0">
-                <span className="text-white font-semibold text-sm">Direct Messages</span>
+                <span className="text-fg font-semibold text-sm">Direct Messages</span>
                 <div className="ml-auto">
                   <InboxButton />
                 </div>
               </div>
-              <div className="flex-1 flex items-center justify-center text-[#80848E]">
+              <div className="flex-1 flex items-center justify-center text-fg-3">
                 Select a conversation
               </div>
             </div>
@@ -611,7 +652,7 @@ export default function AppLayout() {
               aria-hidden="true"
             />
             <div
-              className={`absolute left-[72px] top-0 bottom-0 w-60 bg-layer-1 flex flex-col z-50 shadow-xl transition-transform duration-200 ${dmSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+              className={`absolute left-[72px] top-0 bottom-0 w-60 bg-layer-1 flex flex-col z-50 border-r border-line-strong transition-transform duration-200 ${dmSidebarOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
               role="navigation"
               aria-label="Direct messages"
@@ -638,12 +679,12 @@ export default function AppLayout() {
           ) : (
             <div className="flex-1 flex flex-col bg-layer-2">
               <div className="h-12 px-4 flex items-center gap-3 border-b border-layer-4 shrink-0">
-                <span className="text-white font-semibold text-sm">Direct Messages</span>
+                <span className="text-fg font-semibold text-sm">Direct Messages</span>
                 <div className="ml-auto">
                   <InboxButton />
                 </div>
               </div>
-              <div className="flex-1 flex items-center justify-center text-[#80848E]">
+              <div className="flex-1 flex items-center justify-center text-fg-3">
                 Select a conversation
               </div>
             </div>
@@ -657,12 +698,12 @@ export default function AppLayout() {
           onClick={() => setShowLogoutConfirm(false)}
         >
           <div
-            className="bg-layer-1 rounded-xl w-full max-w-sm mx-4 overflow-hidden"
+            className="bg-surface border border-line-strong rounded-[2px] w-full max-w-sm mx-4 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6">
-              <h3 className="text-white font-bold text-lg mb-2">Log Out</h3>
-              <p className="text-[#B5BAC1] text-sm">
+              <h3 className="text-fg font-bold text-lg mb-2">Log Out</h3>
+              <p className="text-fg-2 text-sm">
                 Are you sure you want to log out from Camp on this device?
               </p>
             </div>
@@ -670,7 +711,7 @@ export default function AppLayout() {
               <button
                 type="button"
                 onClick={() => setShowLogoutConfirm(false)}
-                className="text-sm text-[#B5BAC1] hover:text-white hover:underline cursor-pointer px-4 py-2 transition-colors"
+                className="text-sm text-fg-2 hover:text-fg hover:underline cursor-pointer px-4 py-2 transition-colors"
               >
                 Cancel
               </button>

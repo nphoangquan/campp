@@ -74,18 +74,18 @@ export default function LinkPreview({ url, className = '' }: Props) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className={`block mt-2 rounded overflow-hidden border border-layer-5 hover:border-layer-6 transition-colors max-w-[400px] ${className}`}
+      className={`block mt-2 rounded-[2px] overflow-hidden border border-line-strong hover:border-fg-4 bg-surface transition-colors max-w-[400px] ${className}`}
     >
-      <div className="flex bg-layer-2 rounded border-l-4 border-l-accent-500">
+      <div className="flex bg-surface">
         <div className="flex-1 min-w-0 p-3">
-          <p className="text-[#80848E] text-xs truncate mb-0.5">{siteName}</p>
+          <p className="text-fg-3 text-xs truncate mb-0.5">{siteName}</p>
           {preview.title && (
             <p className="text-accent-400 font-medium text-sm truncate hover:underline">
               {preview.title}
             </p>
           )}
           {preview.description && (
-            <p className="text-[#80848E] text-xs line-clamp-2 mt-1">{preview.description}</p>
+            <p className="text-fg-3 text-xs line-clamp-2 mt-1">{preview.description}</p>
           )}
         </div>
         {preview.image && (
